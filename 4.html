@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banker's Algorithm Simulator Nexus</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-primary: #10b981; /* Emerald 500 - Main bank color */
+            --color-secondary: #06b6d4; /* Cyan 500 - Secondary accent */
+            --color-accent: #fcd34d; /* Amber 300 - Input text/highlights */
+            --color-deadlock: #ef4444; /* Red 500 */
+            --color-safe: #10b981; /* Emerald 500 */
+        }
+        
+        /* Animation for smaller resource particles */
+        @keyframes resourceFlow {
+            0% { transform: translateY(0) scale(0.8) rotate(0deg); opacity: 0.1; }
+            50% { opacity: 0.2; }
+            100% { transform: translateY(-100vh) scale(1.2) rotate(30deg); opacity: 0.05; }
+        }
+
+        /* Glowing Blob Animation */
+        @keyframes glowMove {
+            0% { transform: translate(-50%, -50%) rotate(0deg) scale(1); }
+            50% { transform: translate(-45%, -55%) rotate(10deg) scale(1.1); }
+            100% { transform: translate(-50%, -50%) rotate(0deg) scale(1); }
+        }
+
+        /* Nexus Core Pulsing Effect */
+        @keyframes nexusPulse {
+            0% { box-shadow: 0 0 10px rgba(16, 185, 129, 0.4), 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            50% { box-shadow: 0 0 20px rgba(6, 182, 212, 0.8), 0 0 0 5px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 10px rgba(16, 185, 129, 0.4), 0 0 0 0 rgba(16, 185, 129, 0.7); }
+        }
+
+        /* SCROLL ANIMATION: Fade in and slide up */
+        .fade-in-section {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+            will-change: opacity, transform;
+        }
+
+        .fade-in-section.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0d1117; 
+            min-height: 100vh;
+            color: white;
+            padding: 2rem 0;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* --- Glowing Blob Animation --- */
+        .glowing-blob {
+            position: fixed;
+            width: 50vw;
+            height: 50vw;
+            filter: blur(100px); /* Massive blur for the glow effect */
+            opacity: 0.2;
+            z-index: 1; /* Below the main content */
+            animation: glowMove 25s infinite alternate ease-in-out;
+            border-radius: 50%;
+        }
+
+        .blob-1 {
+            background-color: var(--color-primary); /* Emerald */
+            top: 10%;
+            left: 10%;
+        }
+
+        .blob-2 {
+            background-color: var(--color-secondary); /* Cyan */
+            bottom: 5%;
+            right: 5%;
+            animation-duration: 30s;
+            animation-delay: -5s;
+        }
+
+        /* --- Bank Animation Background (Particles) --- */
+        .resource-particle {
+            position: fixed;
+            top: 100%;
+            left: 0;
+            width: 15px;
+            height: 15px;
+            background: linear-gradient(45deg, var(--color-primary), var(--color-secondary));
+            border-radius: 4px;
+            animation: resourceFlow 20s infinite linear;
+            pointer-events: none;
+            z-index: 2; /* Between blobs and content */
+            box-shadow: 0 0 10px var(--color-primary);
+        }
+
+        .resource-particle:nth-child(2) { left: 10%; animation-duration: 15s; animation-delay: 2s; width: 10px; height: 10px; }
+        .resource-particle:nth-child(3) { left: 30%; animation-duration: 25s; animation-delay: 5s; }
+        .resource-particle:nth-child(4) { left: 50%; animation-duration: 18s; animation-delay: 8s; width: 8px; height: 8px; }
+        .resource-particle:nth-child(5) { left: 70%; animation-duration: 22s; animation-delay: 1s; }
+        .resource-particle:nth-child(6) { left: 90%; animation-duration: 16s; animation-delay: 6s; width: 12px; height: 12px; }
+
+        /* CURSOR GLOW EFFECT (Main Cards) */
+        .card {
+            background-color: #161b22; 
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            position: relative; 
+            z-index: 10; /* Main content sits on top */
+            box-shadow: 0 0 0 rgba(16, 185, 129, 0); /* Initial subtle shadow */
+        }
+        .card:hover {
+            /* Glow on hover */
+            box-shadow: 0 0 30px rgba(6, 182, 212, 0.3), 0 0 15px rgba(16, 185, 129, 0.5);
+        }
+        
+        .nexus-core {
+            border: 2px solid var(--color-secondary);
+            animation: nexusPulse 4s infinite ease-in-out;
+        }
+
+        /* CURSOR GLOW EFFECT (Buttons) */
+        .btn-primary {
+            background-color: var(--color-primary);
+            transition: transform 0.1s, box-shadow 0.3s;
+            box-shadow: 0 5px 10px rgba(16, 185, 129, 0.3); /* Initial shadow */
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.8), 0 0 10px var(--color-secondary); /* Stronger glow */
+        }
+        .btn-danger-demo:hover {
+            /* Specific glow for the red demo button */
+            box-shadow: 0 4px 20px rgba(239, 68, 68, 0.8), 0 0 10px var(--color-accent); 
+        }
+        
+        /* CURSOR GLOW EFFECT (Input Fields) */
+        .input-field {
+            background-color: #1f2a37; 
+            border: 1px solid var(--color-secondary);
+            color: var(--color-accent);
+            box-shadow: 0 0 5px rgba(6, 182, 212, 0.5); 
+            transition: box-shadow 0.3s ease, border-color 0.3s ease;
+        }
+        .input-field:focus {
+             /* Stronger glow on focus */
+             box-shadow: 0 0 10px var(--color-secondary), 0 0 5px var(--color-primary); 
+             border-color: var(--color-primary);
+        }
+
+        .result-safe {
+            background-color: rgba(16, 185, 129, 0.1);
+            border-left: 5px solid var(--color-safe);
+        }
+        .result-unsafe {
+            background-color: rgba(239, 68, 68, 0.1);
+            border-left: 5px solid var(--color-deadlock);
+        }
+
+        /* Default result container style when empty/pre-run */
+        #results_output.default-state {
+            border-left: 5px solid transparent;
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            background-color: #0d1117;
+        }
+
+        /* Deadlock Diagram Styling */
+        .deadlock-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+        }
+        .node {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+            position: relative;
+            margin: 1rem;
+        }
+        .process {
+            background-color: var(--color-secondary); 
+        }
+        .resource {
+            border-radius: 8px;
+            background-color: var(--color-accent);
+            color: black;
+        }
+
+        /* Ensure table inputs are small enough to fit many columns */
+        #allocation_matrix_container table, #max_matrix_container table {
+            border-collapse: separate;
+            border-spacing: 2px;
+        }
+        #allocation_matrix_container input, #max_matrix_container input {
+            max-width: 65px; /* Control max width of individual inputs */
+            height: 38px;
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-8">
+
+    <!-- Glowing Blob Animation Elements -->
+    <div class="glowing-blob blob-1"></div>
+    <div class="glowing-blob blob-2"></div>
+
+    <!-- Bank Resource Flow Animation Elements (Particles) -->
+    <div class="resource-particle"></div>
+    <div class="resource-particle"></div>
+    <div class="resource-particle"></div>
+    <div class="resource-particle"></div>
+    <div class="resource-particle"></div>
+    <div class="resource-particle"></div>
+
+    <!-- Interface uses a wider container now -->
+    <div class="max-w-6xl mx-auto w-full">
+        <!-- HEADER (Scroll Animation) -->
+        <header class="text-center mb-10 p-6 rounded-xl shadow-2xl card fade-in-section">
+            <h1 class="text-4xl sm:text-5xl font-extrabold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-cyan-400">
+                The Resource Safety Nexus
+            </h1>
+            <p class="text-xl text-gray-400">Banker's Algorithm & Deadlock Prevention</p>
+        </header>
+
+        <!-- Main Simulator Section (Scroll Animation) -->
+        <section class="card p-6 mb-8 rounded-xl shadow-2xl nexus-core fade-in-section">
+            <h2 class="text-2xl font-bold mb-4 border-b pb-2 border-gray-700">1. Configure and Define the System State</h2>
+            <p class="text-sm text-gray-400 mb-4">
+                First, define the number of Clients (P) and Resource Types (R) to generate the input tables. **Available** resources should be entered as a comma-separated list.
+            </p>
+
+            <!-- Configuration Section: P, R, and Available -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
+                <!-- P Count -->
+                <div class="space-y-2">
+                    <label for="p_count" class="block font-medium text-lg text-cyan-300">Clients/Processes (P)</label>
+                    <input type="number" id="p_count" value="3" min="1" oninput="generateMatrixInputs();" class="w-full p-3 text-2xl rounded-lg input-field focus:outline-none focus:ring-2 focus:ring-cyan-500 text-center" />
+                </div>
+                <!-- R Count -->
+                <div class="space-y-2">
+                    <label for="r_count" class="block font-medium text-lg text-cyan-300">Resource Types (R)</label>
+                    <input type="number" id="r_count" value="3" min="1" oninput="generateMatrixInputs();" class="w-full p-3 text-2xl rounded-lg input-field focus:outline-none focus:ring-2 focus:ring-cyan-500 text-center" />
+                </div>
+                  <!-- Available Vector -->
+                <div class="space-y-2">
+                    <label for="available" class="block font-medium text-lg text-green-300">Available Resources (Vector)</label>
+                    <input type="text" id="available" class="w-full p-3 rounded-lg input-field focus:outline-none focus:ring-2 focus:ring-green-500 text-xl" placeholder="e.g., 3, 3, 2" value="3, 3, 2" autofocus>
+                </div>
+            </div>
+            
+            <!-- Dynamic Grid Containers -->
+            <div class="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Allocation Matrix Container -->
+                <div>
+                    <label class="block font-bold text-xl text-cyan-300 mb-2">Current Allocation Matrix</label>
+                    <div id="allocation_matrix_container" class="card p-4 rounded-xl min-h-[150px] flex items-center justify-center">
+                        <p class="text-gray-500">Define P and R above to generate grid.</p>
+                    </div>
+                </div>
+
+                <!-- Max Matrix Container -->
+                <div>
+                    <label class="block font-bold text-xl text-cyan-300 mb-2">Maximum Claim Matrix</label>
+                    <div id="max_matrix_container" class="card p-4 rounded-xl min-h-[150px] flex items-center justify-center">
+                        <p class="text-gray-500">Define P and R above to generate grid.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Run Button (Moved for better flow) -->
+            <div class="flex justify-center mt-8">
+                <button onclick="runBankersAlgorithm()" class="w-full md:w-2/3 px-8 py-4 rounded-xl font-bold text-white btn-primary shadow-xl text-xl">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    Run Safety Check
+                </button>
+            </div>
+        </section>
+
+        <!-- Results Section (Scroll Animation) -->
+        <section class="card p-6 mb-8 rounded-xl shadow-2xl fade-in-section">
+            <h2 class="text-2xl font-bold mb-4 border-b pb-2 border-gray-700">2. Safety Analysis Report</h2>
+            <div id="results_output" class="p-4 rounded-xl text-lg default-state bg-gray-900/50">
+                <p class="text-gray-400">The Nexus safety status and detailed analysis will appear here after running the check.</p>
+            </div>
+        </section>
+
+        <!-- Deadlock Demo Section (Scroll Animation - REVERTED TO PREVIOUS STRUCTURE) -->
+        <section class="card p-6 rounded-xl shadow-2xl fade-in-section">
+            <h2 class="text-2xl font-bold mb-4 border-b pb-2 border-gray-700">3. Deadlock Condition Demo (Unsafe State)</h2>
+            <p class="text-gray-300 mb-4">
+                This scenario is carefully engineered to guarantee a potential **deadlock** (unsafe state). The diagram shows a **circular wait** condition where clients block each other indefinitely.
+            </p>
+
+            <button onclick="runDeadlockDemo()" class="w-full md:w-auto px-8 py-3 rounded-xl font-bold text-white shadow-xl bg-red-700 hover:bg-red-600 transition duration-150 btn-danger-demo">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                Load Deadlock Scenario
+            </button>
+
+            <!-- Diagram Container for Deadlock Demo -->
+            <div id="deadlock_diagram" class="mt-6 bg-gray-900/50 p-4 rounded-xl hidden flex-col items-center">
+                <h3 class="text-xl font-semibold mb-4 text-red-400">Client-Resource Deadlock Diagram (P2 $\leftrightarrow$ P3 Cycle)</h3>
+                <div class="deadlock-container">
+                    <!-- P1 - Not involved in cycle -->
+                    <div class="node process">P1</div>
+
+                    <!-- P2 and P3 Cycle -->
+                    <div class="flex flex-col items-center">
+                        <div class="node process" style="background-color: var(--color-safe);">P2 (Holds R2, Wants R3)</div>
+                        <svg height="120" width="120" class="absolute mt-[120px] mr-[120px]">
+                            <!-- P2 -> R3 Request/Need -->
+                            <path d="M 60 0 A 60 60 0 0 1 120 60" fill="none" stroke="var(--color-deadlock)" stroke-width="2" marker-end="url(#arrowhead_deadlock)"/>
+                            <!-- R3 -> P3 Allocation/Hold -->
+                            <path d="M 120 60 A 60 60 0 0 1 60 120" fill="none" stroke="var(--color-accent)" stroke-width="2" marker-end="url(#arrowhead_accent)"/>
+                            <!-- P3 -> R2 Request/Need -->
+                            <path d="M 60 120 A 60 60 0 0 1 0 60" fill="none" stroke="var(--color-deadlock)" stroke-width="2" marker-end="url(#arrowhead_deadlock)"/>
+                            <!-- R2 -> P2 Allocation/Hold -->
+                            <path d="M 0 60 A 60 60 0 0 1 60 0" fill="none" stroke="var(--color-accent)" stroke-width="2" marker-end="url(#arrowhead_accent)"/>
+
+                            <defs>
+                                <marker id="arrowhead_deadlock" markerWidth="8" markerHeight="8" refX="2" refY="4" orient="auto">
+                                    <polygon points="0 0, 8 4, 0 8" fill="var(--color-deadlock)" />
+                                </marker>
+                                <marker id="arrowhead_accent" markerWidth="8" markerHeight="8" refX="2" refY="4" orient="auto">
+                                    <polygon points="0 0, 8 4, 0 8" fill="var(--color-accent)" />
+                                </marker>
+                            </defs>
+                        </svg>
+                        <div class="flex">
+                            <div class="node resource mt-4 mr-10">R2</div>
+                            <div class="node resource mt-4 ml-10">R3</div>
+                        </div>
+                        <div class="node process" style="background-color: var(--color-safe);">P3 (Holds R3, Wants R2)</div>
+                    </div>
+
+                </div>
+                <p class="text-sm text-gray-400 mt-4">
+                    <span class="text-yellow-300">Yellow Arrows</span> = Allocation (Resource held by Process/Client).
+                    <span class="text-red-400">Red Arrows</span> = Request/Need (Process/Client waits for Resource).
+                    The cyclic path ($\text{P}2 \rightarrow \text{R}3 \rightarrow \text{P}3 \rightarrow \text{R}2 \rightarrow \text{P}2$) indicates a deadlock.
+                </p>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // Global utility elements
+        const resultsOutput = document.getElementById('results_output');
+        const availableInput = document.getElementById('available');
+        const pCountInput = document.getElementById('p_count'); 
+        const rCountInput = document.getElementById('r_count');
+        const allocationContainer = document.getElementById('allocation_matrix_container'); 
+        const maxContainer = document.getElementById('max_matrix_container'); 
+
+        // Initial data for pre-populating the grid (based on old defaults)
+        const defaultAllocation = [[0, 1, 0], [2, 0, 0], [3, 0, 2]];
+        const defaultMax = [[7, 5, 3], [3, 2, 2], [9, 0, 2]];
+
+
+        /**
+         * Global function to handle error display (needed by parsers).
+         */
+        function runDisplayError(message) {
+            resultsOutput.innerHTML = `<p class="font-extrabold text-2xl text-red-400 text-center p-4">SYSTEM ALERT: ${message}</p>`;
+            resultsOutput.classList.remove('result-safe', 'bg-gray-900/50', 'default-state');
+            resultsOutput.classList.add('result-unsafe');
+            resultsOutput.style.borderColor = 'var(--color-deadlock)';
+        }
+
+        /**
+         * Parses a vector string (e.g., "3, 3, 2") into a 1D array of numbers.
+         */
+        function parseVector(vectorStr) {
+            try {
+                const R = parseInt(rCountInput.value, 10) || 0;
+                const vector = vectorStr.trim().split(',')
+                    .map(v => v.trim())
+                    .filter(v => v !== '') 
+                    .map(val => {
+                        const num = parseInt(val, 10);
+                        if (isNaN(num) || num < 0) throw new Error("Available vector values must be non-negative integers.");
+                        return num;
+                    });
+
+                if (vector.length === 0) throw new Error("Available vector cannot be empty.");
+                if (R > 0 && vector.length !== R) throw new Error(`Available vector size (${vector.length}) must match Resource Count R (${R}).`);
+                
+                return vector;
+            } catch (e) {
+                console.error("Vector parsing error:", e);
+                runDisplayError(`Input Error in Available Resources: ${e.message}`);
+                return null;
+            }
+        }
+        
+        /**
+         * Replaces parseMatrix. Reads the 2D array from the dynamic input grid.
+         * @param {string} matrixType - 'allocation' or 'max'
+         * @returns {number[][]} The parsed matrix or null if error.
+         */
+        function readMatrixFromGrid(matrixType) {
+            const P = parseInt(pCountInput.value, 10) || 0;
+            const R = parseInt(rCountInput.value, 10) || 0;
+            const container = matrixType === 'allocation' ? allocationContainer : maxContainer;
+            const matrix = [];
+
+            if (P < 1 || R < 1) return null;
+
+            try {
+                for (let i = 0; i < P; i++) {
+                    const row = [];
+                    for (let j = 0; j < R; j++) {
+                        const id = `${matrixType}-${i}-${j}`;
+                        const input = container.querySelector(`#${id}`);
+                        
+                        if (!input) {
+                            throw new Error(`Input grid not generated or incomplete for ${matrixType}. Check P and R settings.`);
+                        }
+                        
+                        const num = parseInt(input.value, 10);
+                        if (isNaN(num) || num < 0) throw new Error(`${matrixType} value at [P${i}][R${j}] must be a non-negative integer.`);
+                        
+                        row.push(num);
+                    }
+                    matrix.push(row);
+                }
+                return matrix;
+            } catch (e) {
+                console.error("Matrix reading error:", e);
+                runDisplayError(`Data Error in ${matrixType} Matrix: ${e.message}`);
+                return null;
+            }
+        }
+
+        /**
+         * Generates the P x R grid of input boxes for a given matrix type.
+         */
+        function generateMatrixInputs() {
+            const P = parseInt(pCountInput.value, 10) || 0;
+            const R = parseInt(rCountInput.value, 10) || 0;
+
+            if (P < 1 || R < 1 || P > 10 || R > 10) {
+                const message = (P > 10 || R > 10) ? 'Max P/R limit is 10 for performance.' : 'Set **Clients (P)** and **Resources (R)** (min 1).';
+                allocationContainer.innerHTML = `<p class="text-gray-500 text-center">${message}</p>`;
+                maxContainer.innerHTML = `<p class="text-gray-500 text-center">${message}</p>`;
+                
+                allocationContainer.classList.add('flex', 'items-center', 'justify-center');
+                maxContainer.classList.add('flex', 'items-center', 'justify-center');
+                return;
+            }
+            
+            allocationContainer.classList.remove('flex', 'items-center', 'justify-center');
+            maxContainer.classList.remove('flex', 'items-center', 'justify-center');
+
+            const generateTable = (matrixType, defaultData) => {
+                let html = `<table class="min-w-full text-center text-sm border-separate border-spacing-1">`;
+                
+                // Header Row (Resource Labels)
+                html += `<thead><tr><th class="p-1 font-bold text-gray-400">P/R</th>`;
+                for (let j = 0; j < R; j++) {
+                    html += `<th class="p-1 text-sm text-cyan-300">R${j}</th>`;
+                }
+                html += `</tr></thead><tbody>`;
+
+                // Data Rows (Inputs)
+                for (let i = 0; i < P; i++) {
+                    html += `<tr><td class="p-1 font-bold text-cyan-300 border-r border-gray-700">P${i}</td>`;
+                    for (let j = 0; j < R; j++) {
+                        // Use default data for initial load, otherwise default to 0
+                        const defaultValue = defaultData && defaultData[i] && defaultData[i][j] !== undefined ? defaultData[i][j] : 0;
+                        html += `
+                            <td class="p-1">
+                                <input type="number" id="${matrixType}-${i}-${j}" value="${defaultValue}" min="0" 
+                                    class="w-full text-center bg-gray-700/50 rounded-lg p-1 input-field focus:ring-green-500 text-amber-300 text-lg sm:text-base"
+                                    oninput="this.value=this.value.replace(/[^0-9]/g,'')" 
+                                />
+                            </td>
+                        `;
+                    }
+                    html += `</tr>`;
+                }
+
+                html += `</tbody></table>`;
+                return html;
+            };
+            
+            allocationContainer.innerHTML = generateTable('allocation', defaultAllocation);
+            maxContainer.innerHTML = generateTable('max', defaultMax);
+        }
+        
+        /**
+         * The core Banker's Algorithm implementation to check for a safe state and record history.
+         * @returns {{isSafe: boolean, sequence: string, history: Array<Object>}}
+         */
+        function checkSafety(allocation, max, available) {
+            const P = allocation.length;
+            const R = available.length;
+            
+            // 1. Calculate Need Matrix
+            const need = allocation.map((allocRow, i) =>
+                allocRow.map((allocVal, j) => max[i][j] - allocVal)
+            );
+
+            // 2. Initialize Work and Finish
+            let work = [...available]; // Copy available
+            let finish = new Array(P).fill(false);
+            let safeSequence = [];
+            let completedCount = 0;
+            let iterations = 0;
+            let processHistory = []; // History tracker
+
+            // Safety loop: Keep trying to find processes to finish
+            while (completedCount < P && iterations < P * P + 1) { // Added an iteration limit check to prevent infinite loops on error state
+                let found = false;
+                for (let i = 0; i < P; i++) {
+                    if (!finish[i]) {
+                        const currentNeed = need[i];
+                        
+                        // Check if Need <= Work
+                        const canSatisfy = currentNeed.every((needVal, j) => needVal <= work[j]);
+
+                        // Record the attempt for history
+                        const historyEntry = {
+                            process: `P${i}`,
+                            need: [...currentNeed],
+                            workBefore: [...work],
+                            primaryCheck: canSatisfy ? 'Success: Need <= Work' : 'Failure: Need > Work',
+                            canSatisfy: canSatisfy,
+                            status: canSatisfy ? 'Satisfied' : 'Waiting',
+                            workAfter: null,
+                            released: null,
+                            completedClient: null,
+                        };
+                        
+                        processHistory.push(historyEntry);
+
+                        if (canSatisfy) {
+                            // Work = Work + Allocation[i]
+                            const releasedResources = allocation[i];
+                            work = work.map((w, j) => w + releasedResources[j]);
+                            
+                            // Update the history entry for the successful process
+                            historyEntry.workAfter = [...work];
+                            historyEntry.released = [...releasedResources];
+                            historyEntry.completedClient = historyEntry.process;
+
+                            finish[i] = true;
+                            safeSequence.push(`P${i}`);
+                            completedCount++;
+                            found = true;
+                            break; // Restart search from the beginning for next process
+                        }
+                    }
+                }
+
+                if (!found && completedCount < P) {
+                    // No process could be found that could finish with the current work pool
+                    return { isSafe: false, sequence: `Unsafe State. Only ${completedCount} clients could finish.`, history: processHistory };
+                }
+
+                iterations++; 
+            }
+
+            if (completedCount === P) {
+                return { isSafe: true, sequence: safeSequence.join(' $\rightarrow$ '), history: processHistory };
+            } else {
+                return { isSafe: false, sequence: "Algorithm finished prematurely (Internal Error/Unsafe).", history: processHistory };
+            }
+        }
+
+        /**
+         * Helper function to format a vector array nicely.
+         */
+        function formatVector(vector) {
+            return `[ ${vector.join(', ')} ]`;
+        }
+
+        /**
+         * Helper function to generate the detailed history HTML.
+         */
+        function generateHistoryHTML(history) {
+            // Retrieve matrices using the grid reader for the initial state table
+            const allocation = readMatrixFromGrid('allocation');
+            const max = readMatrixFromGrid('max');
+            
+            if (!allocation || !max) { 
+                return '<p class="text-red-400">Error: Could not retrieve matrix data for history display.</p>'; 
+            } 
+
+            // Calculate Need locally for the table display
+            const need = allocation.map((allocRow, i) =>
+                allocRow.map((allocVal, j) => max[i][j] - allocVal)
+            );
+            
+            let html = `
+                <h3 class="text-xl font-semibold mt-8 mb-4 border-b pb-2 border-gray-700 text-cyan-300">Detailed Step-by-Step Analysis</h3>
+                <div class="card p-4 rounded-xl text-sm mb-6">
+                    <p class="font-bold text-lg text-green-300 mb-2">Initial State: Allocation vs. Need</p>
+                    <div class="grid grid-cols-3 gap-2 font-mono text-center text-xs sm:text-sm">
+                        <div class="font-bold text-gray-400">Client</div>
+                        <div class="font-bold text-gray-400">Allocation</div>
+                        <div class="font-bold text-gray-400">Need ($\text{Max} - \text{Allocation}$)</div>
+                    </div>
+            `;
+
+            for (let i = 0; i < need.length; i++) {
+                html += `
+                    <div class="grid grid-cols-3 gap-2 font-mono text-center border-t border-gray-800 pt-1 mt-1 text-xs sm:text-sm">
+                        <div class="text-cyan-300">P${i}</div>
+                        <div class="text-amber-300">${formatVector(allocation[i])}</div>
+                        <div class="text-red-400">${formatVector(need[i])}</div>
+                    </div>
+                `;
+            }
+            html += `</div>`;
+
+
+            html += `<div class="space-y-4">`;
+            history.forEach((step, index) => {
+                // Only show steps where a process was actually considered
+                if (step.workBefore.length === 0) return; 
+
+                const statusClass = step.canSatisfy ? 'border-green-500 bg-green-900/20' : 'border-red-500 bg-red-900/20';
+                const statusText = step.canSatisfy ? 
+                    `<span class="text-green-400 font-bold">Client Finished $\checkmark$</span>` : 
+                    `<span class="text-red-400 font-bold">Client Still Waiting $\times$</span>`;
+
+                html += `
+                    <div class="card p-4 rounded-xl border-l-4 ${statusClass} shadow-lg">
+                        <p class="font-bold text-lg mb-2 flex justify-between items-center">
+                            Run Cycle ${index + 1}: Client ${step.process} Check - ${statusText}
+                        </p>
+                        <div class="text-sm space-y-1">
+                            <p class="font-mono">Current Work: <span class="text-amber-300">${formatVector(step.workBefore)}</span></p>
+                            <p class="font-mono">Client ${step.process} Need: <span class="text-red-400">${formatVector(step.need)}</span></p>
+                `;
+
+                if (step.canSatisfy) {
+                    html += `
+                            <p class="font-bold text-green-400 pt-1">Condition: Need $\le$ Work. Client ${step.process} is granted resources, finishes, and releases its **Allocation**.</p>
+                            <p class="font-mono">Resources Released (Allocation): <span class="text-cyan-300">${formatVector(step.released)}</span></p>
+                            <p class="font-mono text-lg font-bold pt-2">New Work Vector: <span class="text-green-300">${formatVector(step.workAfter)}</span></p>
+                    `;
+                } else {
+                    html += `
+                            <p class="font-bold text-red-400 pt-1">Condition: Need $>$ Work. Client ${step.process} cannot finish yet. Moving to next available client.</p>
+                    `;
+                }
+
+                html += `
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += `</div>`;
+            return html;
+        }
+
+
+        /**
+         * Main function to read inputs and run the simulation.
+         */
+        function runBankersAlgorithm() {
+            // Reset results output appearance
+            resultsOutput.classList.remove('default-state');
+            resultsOutput.innerHTML = '<p class="text-gray-400 text-center">Running analysis...</p>';
+
+            const available = parseVector(availableInput.value);
+            const allocation = readMatrixFromGrid('allocation');
+            const max = readMatrixFromGrid('max');
+
+            // Check for errors caught by parsers/readers
+            if (!available || !allocation || !max) {
+                return; // Error display already handled by runDisplayError inside helper functions
+            }
+
+            const P = allocation.length;
+            const R = available.length;
+            
+            // Allocation vs Max Check (Allocation <= Max)
+            for (let i = 0; i < P; i++) {
+                for (let j = 0; j < R; j++) {
+                    if (allocation[i][j] > max[i][j]) {
+                        runDisplayError(`Input Error: Allocation for P${i} R${j} (${allocation[i][j]}) cannot be greater than Max Claim (${max[i][j]}).`);
+                        return;
+                    }
+                }
+            }
+            
+            // Run Algorithm
+            const { isSafe, sequence, history } = checkSafety(allocation, max, available);
+            
+            // Clear and prepare results output for both summary and history
+            resultsOutput.classList.remove('result-safe', 'result-unsafe', 'bg-gray-900/50');
+            resultsOutput.classList.add(isSafe ? 'result-safe' : 'result-unsafe', 'p-6'); 
+            resultsOutput.style.borderColor = isSafe ? 'var(--color-safe)' : 'var(--color-deadlock)';
+
+            let summaryHTML = `<h2 class="font-extrabold text-3xl mb-4 text-center">${isSafe ? 'STATUS: SAFE! The Nexus is secure.' : 'STATUS: UNSAFE! Deadlock is Possible.'}</h2>`;
+            summaryHTML += `<p class="text-xl font-medium text-center mb-6">Safe Sequence: <span class="text-amber-300">${sequence}</span></p>`;
+
+            let historyHTML = generateHistoryHTML(history);
+            
+            resultsOutput.innerHTML = summaryHTML + historyHTML;
+        }
+
+        /**
+         * Loads a hardcoded scenario that results in a deadlock and runs the algorithm.
+         */
+        function runDeadlockDemo() {
+            // 1. Set P and R and Available
+            pCountInput.value = '3'; 
+            rCountInput.value = '3'; 
+            availableInput.value = '1, 1, 1';
+            
+            // 2. Generate the grids before populating them
+            generateMatrixInputs(); 
+            
+            // 3. Set the values in the new grid inputs
+            const deadlockAlloc = [[1, 1, 1], [2, 2, 2], [2, 2, 2]];
+            const deadlockMax = [[2, 2, 2], [4, 4, 3], [4, 3, 4]];
+
+            for(let i=0; i<3; i++) {
+                for(let j=0; j<3; j++) {
+                    // Note: document.getElementById is used directly as we know the IDs
+                    document.getElementById(`allocation-${i}-${j}`).value = deadlockAlloc[i][j];
+                    document.getElementById(`max-${i}-${j}`).value = deadlockMax[i][j];
+                }
+            }
+            
+            // Show the diagram
+            document.getElementById('deadlock_diagram').classList.remove('hidden');
+            document.getElementById('deadlock_diagram').classList.add('flex');
+
+            // Run the algorithm for the demo
+            runBankersAlgorithm();
+        }
+
+
+        /**
+         * Sets up the Intersection Observer for scroll-based fade-in animations, 
+         * triggering both on enter and exit/re-enter for a dynamic feel.
+         */
+        function setupScrollAnimation() {
+            const sections = document.querySelectorAll('.fade-in-section');
+
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        // Element entered the viewport
+                        entry.target.classList.add('is-visible');
+                    } else {
+                        // Element left the viewport (scrolling up or down past it)
+                        // This removes the class, resetting the element's position/opacity
+                        // so the animation plays again when it comes back into view.
+                        entry.target.classList.remove('is-visible');
+                    }
+                });
+            }, {
+                threshold: 0.1, // Start fading in when 10% of the element is visible
+                rootMargin: '0px 0px -50px 0px'
+            });
+
+            sections.forEach(section => {
+                observer.observe(section);
+            });
+        }
+
+        // --- Initial setup ---
+
+        window.onload = function() {
+            // 1. Generate the initial matrix inputs based on default P/R values (3, 3)
+            generateMatrixInputs();
+            // 2. Setup the scroll animations
+            setupScrollAnimation();
+            // 3. Auto-focus on P count
+            document.getElementById('p_count').focus();
+        };
+
+    </script>
+</body>
+</html>

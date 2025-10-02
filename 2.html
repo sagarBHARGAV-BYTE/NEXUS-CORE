@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CPU Scheduling Nexus</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Define Futuristic Color Palette */
+        :root {
+            --color-bg: #0d0d1a;
+            --color-primary: #8b5cf6;    /* Vibrant Purple */
+            --color-secondary: #22d3ee;  /* Electric Cyan */
+            --color-border: #3a3a60;     /* Dark Border */
+            --color-glow: #a78bfa;       /* Light Purple Glow */
+        }
+
+        /* Custom styles for the "Multiverse" aesthetic */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--color-bg);
+            color: #e0e0ff;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* --- Holographic Grid Overlay (Static) --- */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /* Subtle grid lines for overall structure */
+            background-image: 
+                linear-gradient(to right, rgba(50, 50, 80, 0.3) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(50, 50, 80, 0.3) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: -5;
+        }
+
+        /* --- Hyper-Dynamic Flowing Background (Multiverse) --- */
+        #animated-background {
+            /* Base container for all animated fixed layers */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            pointer-events: none;
+            z-index: -10;
+            overflow: hidden;
+        }
+
+        /* Layer 1: Slow, deep-space pulse (Large scale) */
+        #bg-pulse {
+            position: absolute;
+            width: 200%; height: 200%;
+            top: -50%; left: -50%;
+            background: radial-gradient(circle at center, rgba(139, 92, 246, 0.2) 0%, transparent 40%);
+            animation: pulse 60s ease infinite alternate;
+            filter: blur(50px);
+            opacity: 0.5;
+        }
+        @keyframes pulse {
+            0% { transform: scale(0.8) rotate(0deg); }
+            100% { transform: scale(1.2) rotate(360deg); }
+        }
+
+        /* Layer 2: Fast scrolling data grid/warp pattern */
+        #bg-grid {
+            position: absolute;
+            width: 100%; height: 100%;
+            background-image: 
+                linear-gradient(to right, rgba(34, 211, 238, 0.3) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(34, 211, 238, 0.3) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: scroll-grid 15s linear infinite; /* Faster scroll */
+            opacity: 0.15;
+        }
+        @keyframes scroll-grid {
+            0% { background-position: 0 0; }
+            100% { background-position: 50px 50px; }
+        }
+
+        /* Layer 3: High-speed data lines (Star/Streak simulation) */
+        #bg-lines { 
+            position: absolute;
+            width: 100%; height: 100%;
+            background-image: linear-gradient(0deg, transparent 49.5%, rgba(167, 139, 250, 0.8) 50%, transparent 50.5%);
+            background-size: 100% 50px;
+            animation: scroll-lines 5s linear infinite; /* Very fast vertical scroll */
+            opacity: 0.05;
+        }
+        @keyframes scroll-lines {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 50px; }
+        }
+
+        /* Layer 4: Localized Thundering/Temporal Storm (FULL SCREEN) */
+        #bg-video-sim {
+            position: absolute;
+            top: 0; 
+            left: 0;
+            width: 100%;
+            height: 100%; /* CHANGED: Now covers 100% of the viewport */
+            /* Background set to transparent, flashes rely solely on box-shadow */
+            background: transparent; 
+            animation: localized-thunder 5s linear infinite; /* Faster, localized flashing */
+            opacity: 1; 
+            pointer-events: none;
+            z-index: -8; 
+        }
+        
+        @keyframes localized-thunder {
+            0%, 10%, 20%, 30%, 40%, 50%, 60%, 70%, 80%, 90% {
+                box-shadow: 0 0 100px 50px rgba(34, 211, 238, 0.0); /* Subtle non-flash state */
+            }
+            15% {
+                box-shadow: 0 0 200px 100px rgba(34, 211, 238, 0.8), 0 0 500px 100px rgba(139, 92, 246, 0.5); /* Intense cyan/purple flash 1 */
+                opacity: 0.9;
+            }
+            35% {
+                box-shadow: 0 0 150px 75px rgba(34, 211, 238, 0.5); /* Less intense flash 2 */
+                opacity: 0.7;
+            }
+            75% {
+                box-shadow: 0 0 300px 150px rgba(34, 211, 238, 1.0), 0 0 600px 150px rgba(139, 92, 246, 0.8); /* Maximum intensity flash 3 */
+                opacity: 1;
+            }
+        }
+        
+        /* Layer 5: Tornado/Vortex Simulation (Side) */
+        #bg-vortex {
+            position: absolute;
+            right: -100px; /* Start off-screen slightly */
+            top: 10%;
+            width: 400px; /* Wide vortex base */
+            height: 1000px; /* Tall to cover the side */
+            background: radial-gradient(ellipse at 100% 50%, rgba(34, 211, 238, 0.3) 0%, transparent 60%);
+            animation: vortex-spin 40s linear infinite, vortex-chaotic-move 30s ease-in-out infinite alternate;
+            filter: blur(30px);
+            transform-origin: 100% 50%;
+            opacity: 0.2;
+            z-index: -7;
+        }
+
+        @keyframes vortex-spin {
+            0% { transform: rotate(0deg) scaleY(1); }
+            100% { transform: rotate(360deg) scaleY(1.2); }
+        }
+        @keyframes vortex-chaotic-move {
+            0% { right: -100px; top: 10%; opacity: 0.2; }
+            50% { right: -50px; top: 25%; opacity: 0.4; }
+            100% { right: -100px; top: 10%; opacity: 0.2; }
+        }
+        /* --- End Hyper-Dynamic Background --- */
+
+
+        /* --- Header Styling --- */
+        header {
+            z-index: 60; 
+        }
+        
+        .header-title {
+            font-size: 1.875rem; /* text-3xl */
+            font-weight: 800;    /* font-extrabold */
+            background-clip: text;
+            color: transparent;
+            background-image: linear-gradient(to right, #22d3ee, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 0.1em; /* tracking-wider */
+        }
+
+
+        /* Styling for the main content card (Holographic Panel) */
+        .card {
+            background-color: rgba(15, 15, 30, 0.95); 
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--color-border);
+            box-shadow: 
+                0 0 15px rgba(139, 92, 246, 0.3), /* Primary Glow */
+                inset 0 0 10px rgba(139, 92, 246, 0.1); /* Inner Haze */
+            transition: all 0.3s ease-in-out;
+            border-radius: 1rem;
+        }
+
+        /* Input Fields */
+        .input-glow {
+            border-color: var(--color-primary);
+            box-shadow: 0 0 5px rgba(92, 98, 236, 0.5);
+            background-color: #1a1a30;
+        }
+
+        /* Command Button: Subdued state (Glow hidden) */
+        .btn-command {
+            background-color: #1a1a30; /* Dark, non-glowing background */
+            border: 1px solid var(--color-secondary); 
+            color: var(--color-secondary); /* Text color is cyan for visibility */
+            box-shadow: none; /* No initial shadow/glow */
+            transition: all 0.3s ease-in-out;
+        }
+        
+        /* Command Button: Activated state (Glow applied) */
+        .btn-command:hover {
+            background-image: linear-gradient(90deg, #4f46e5, var(--color-primary)); /* Bright gradient on hover */
+            color: white; /* White text on bright background */
+            transform: scale(1.02);
+            border-color: transparent;
+            /* Strong glow effect */
+            box-shadow: 
+                0 0 10px rgba(34, 211, 238, 0.8), /* Cyan base glow */
+                0 0 20px rgba(139, 92, 246, 0.6); /* Purple accent glow */
+        }
+        
+        /* Data Readout Boxes */
+        .data-box {
+            border: 1px solid var(--color-border);
+            box-shadow: 0 0 5px rgba(34, 211, 238, 0.3);
+            transition: all 0.3s ease;
+        }
+        .data-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(34, 211, 238, 0.5), inset 0 0 10px rgba(34, 211, 238, 0.5);
+            border-color: var(--color-secondary);
+        }
+
+        /* Gantt Chart Styling */
+        #gantt-chart {
+            display: flex;
+            overflow-x: auto;
+            white-space: nowrap;
+            min-height: 80px;
+            margin-top: 1rem;
+            border-radius: 0.75rem;
+            border: 2px solid var(--color-secondary);
+            background-color: #1a1a30;
+            box-shadow: inset 0 0 15px rgba(34, 211, 238, 0.2);
+        }
+
+        .gantt-segment {
+            display: inline-flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 4px 8px;
+            text-align: center;
+            font-size: 0.8rem;
+            position: relative;
+            min-width: 30px;
+            border-right: 1px dashed rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .gantt-segment:hover {
+            opacity: 0.9;
+            transform: scale(1.05);
+            z-index: 10;
+        }
+
+        .time-label {
+            position: absolute;
+            bottom: -20px;
+            right: -10px;
+            font-size: 0.8rem;
+            color: var(--color-secondary);
+            font-weight: bold;
+        }
+
+        /* Sticky/Scrolling Animation for Sections (Element Reveal) */
+        .scroll-animate {
+            transform: translateY(40px);
+            opacity: 0;
+            transition: opacity 1.2s ease-out, transform 1.2s ease-out;
+        }
+        .scroll-animate.active {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        /* Table Styling */
+        th {
+            background-color: #2b3052;
+            color: var(--color-secondary);
+            border-bottom: 2px solid var(--color-primary);
+        }
+        td {
+            border-color: #2a2a40 !important;
+        }
+
+        /* Color palette for processes */
+        .color-0 { background-color: #f87171; }
+        .color-1 { background-color: #60a5fa; }
+        .color-2 { background-color: #4ade80; }
+        .color-3 { background-color: #facc15; }
+        .color-4 { background-color: #c084fc; }
+        .color-5 { background-color: #fb923c; }
+        .color-6 { background-color: #2dd4bf; }
+        .color-7 { background-color: #e879f9; }
+        .color-8 { background-color: #a78bfa; }
+        .color-9 { background-color: #84cc16; }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <!-- Dynamic Flowing Background (Mimics Futuristic GIF/Data Flow) -->
+    <div id="animated-background">
+        <div id="bg-pulse"></div>
+        <div id="bg-grid"></div>
+        <div id="bg-lines"></div>
+        <!-- Localized Thundering/Temporal Storm (FULL SCREEN) -->
+        <div id="bg-video-sim"></div> 
+        <!-- New Vortex/Tornado Simulation (Side) -->
+        <div id="bg-vortex"></div>
+    </div>
+    <div class="h-[80px]"></div> <!-- Spacer for fixed header -->
+
+    <header class="fixed top-0 left-0 w-full z-60 bg-gray-900/90 backdrop-blur-md border-b border-[#3a3a60] shadow-xl">
+        <div class="container mx-auto p-4 flex justify-between items-center">
+            <h1 class="header-title" data-text="CPU SCHEDULING NEXUS">
+                CPU SCHEDULING NEXUS
+            </h1>
+            <p id="current-algo" class="text-lg font-medium text-purple-300">Algorithm: Core Systems Standby</p>
+        </div>
+    </header>
+
+    <main class="container mx-auto p-4 space-y-12 pb-20 z-10 relative">
+
+        <!-- Section 1: Process Input -->
+        <section id="input-section" class="card p-6 rounded-xl scroll-animate">
+            <h2 class="text-2xl font-bold mb-4 text-indigo-400 border-b-2 border-indigo-500/50 pb-2">1. Initialize Processes</h2>
+
+            <!-- Quantum Input -->
+            <div class="mb-6 flex flex-col sm:flex-row sm:items-end sm:space-x-4">
+                <div class="flex-grow">
+                    <label for="quantum" class="block text-sm font-medium text-purple-300">Round Robin Quantum (ms)</label>
+                    <input type="number" id="quantum" value="2" min="1" class="w-full mt-1 p-2 rounded-lg input-glow focus:outline-none text-white" placeholder="Time Quantum">
+                </div>
+                <!-- APPLYING btn-command -->
+                <button onclick="clearProcesses()" class="btn-command p-3 rounded-lg font-semibold mt-4 sm:mt-0 shadow-lg uppercase">
+                    Clear All Processes
+                </button>
+            </div>
+
+
+            <!-- Add New Process Form -->
+            <form id="add-process-form" class="grid grid-cols-2 md:grid-cols-5 gap-4 items-end mb-6 p-4 border border-blue-500/30 rounded-lg">
+                <input type="text" id="p_name" placeholder="Name (P1, P2...)" required class="col-span-2 md:col-span-1 p-2 rounded-lg input-glow focus:outline-none text-white">
+                <input type="number" id="p_arrival" placeholder="Arrival Time (AT)" required min="0" value="0" class="col-span-1 p-2 rounded-lg input-glow focus:outline-none text-white">
+                <input type="number" id="p_burst" placeholder="Burst Time (BT)" required min="1" class="col-span-1 p-2 rounded-lg input-glow focus:outline-none text-white">
+                <input type="number" id="p_priority" placeholder="Priority (1=Highest)" required min="1" value="1" class="col-span-1 p-2 rounded-lg input-glow focus:outline-none text-white">
+                <!-- Keep btn-primary for immediate action feedback -->
+                <button type="submit" class="col-span-2 md:col-span-5 btn-primary p-2 rounded-lg text-white font-bold uppercase">
+                    Add Process to Queue
+                </button>
+            </form>
+
+            <!-- Current Process List -->
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-sm rounded-lg overflow-hidden">
+                    <thead class="text-left text-xs uppercase tracking-wider">
+                        <tr>
+                            <th class="p-3">Name</th>
+                            <th class="p-3">Arrival Time</th>
+                            <th class="p-3">Burst Time</th>
+                            <th class="p-3">Priority</th>
+                            <th class="p-3">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="process-list-body" class="divide-y divide-gray-700">
+                        <!-- Processes will be injected here -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Section 2: Algorithm Selection and Run -->
+        <section id="control-section" class="card p-6 rounded-xl sticky top-[80px] z-10 scroll-animate">
+            <h2 class="text-2xl font-bold mb-4 text-indigo-400 border-b-2 border-indigo-500/50 pb-2">2. Select & Deploy Scheduling Protocol</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- APPLYING btn-command -->
+                <button onclick="runSimulation('priority_preemptive')" class="btn-command p-4 rounded-lg font-bold text-center uppercase tracking-wider flex items-center justify-center">
+                    <span class="mr-2">⚡</span> Priority (Preemptive)
+                </button>
+                <button onclick="runSimulation('priority_nonpreemptive')" class="btn-command p-4 rounded-lg font-bold text-center uppercase tracking-wider flex items-center justify-center">
+                    <span class="mr-2">🛑</span> Priority (Non-Preemptive)
+                </button>
+                <button onclick="runSimulation('round_robin')" class="btn-command p-4 rounded-lg font-bold text-center uppercase tracking-wider flex items-center justify-center">
+                    <span class="mr-2">🔄</span> Round Robin (RR)
+                </button>
+            </div>
+        </section>
+
+        <!-- Section 3: Results -->
+        <section id="results-section" class="card p-6 rounded-xl scroll-animate">
+            <h2 class="text-2xl font-bold mb-4 text-indigo-400 border-b-2 border-indigo-500/50 pb-2">3. Quantum State Analysis</h2>
+            <div id="status-message" class="bg-yellow-900/50 text-yellow-300 p-3 rounded-lg mb-4 hidden"></div>
+
+            <!-- Gantt Chart -->
+            <h3 class="text-xl font-semibold mt-6 mb-2 text-cyan-300">Gantt Timeline Visualization (CPU History)</h3>
+            <div id="gantt-chart">
+                <!-- Gantt chart segments will be injected here -->
+            </div>
+            <p class="text-xs text-gray-400 mt-4">X-axis represents time unit flow. Each segment is a CPU burst.</p>
+
+            <div id="results-content" class="mt-8 space-y-8">
+                <!-- Summary Metrics -->
+                <h3 class="text-xl font-semibold mb-3 text-cyan-300">System Performance Summary</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                    <div class="p-4 rounded-lg bg-indigo-900/50 data-box">
+                        <p class="text-xs uppercase text-indigo-300 font-semibold">CPU Utilization</p>
+                        <p id="cpu-utilization" class="text-3xl font-extrabold text-white">0.00%</p>
+                    </div>
+                    <div class="p-4 rounded-lg bg-purple-900/50 data-box">
+                        <p class="text-xs uppercase text-purple-300 font-semibold">Avg Turnaround Time</p>
+                        <p id="avg-tat" class="text-3xl font-extrabold text-white">0.00</p>
+                    </div>
+                    <div class="p-4 rounded-lg bg-red-900/50 data-box">
+                        <p class="text-xs uppercase text-red-300 font-semibold">Avg Waiting Time</p>
+                        <p id="avg-wt" class="text-3xl font-extrabold text-white">0.00</p>
+                    </div>
+                    <div class="p-4 rounded-lg bg-green-900/50 data-box">
+                        <p class="text-xs uppercase text-green-300 font-semibold">Avg Response Time</p>
+                        <p id="avg-rt" class="text-3xl font-extrabold text-white">0.00</p>
+                    </div>
+                </div>
+
+                <!-- Per-Process Metrics -->
+                <h3 class="text-xl font-semibold mt-6 mb-3 text-cyan-300">Process State Metrics</h3>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-sm rounded-lg overflow-hidden">
+                        <thead class="text-left text-xs uppercase tracking-wider">
+                            <tr>
+                                <th class="p-3">Process</th>
+                                <th class="p-3">AT</th>
+                                <th class="p-3">BT</th>
+                                <th class="p-3">Priority</th>
+                                <th class="p-3">Completion Time (CT)</th>
+                                <th class="p-3">Turnaround Time (TAT)</th>
+                                <th class="p-3">Waiting Time (WT)</th>
+                                <th class="p-3">Response Time (RT)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="metrics-body" class="divide-y divide-gray-700">
+                            <!-- Metrics will be injected here -->
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Floating Message Box (for errors/alerts) -->
+        <div id="message-box" class="fixed bottom-5 right-5 p-4 rounded-lg shadow-xl text-white hidden z-50 transition-opacity duration-300"></div>
+
+    </main>
+
+    <script>
+        // --- Globals ---
+        let processes = [];
+        let processIdCounter = 1;
+        const colorClasses = ['color-0', 'color-1', 'color-2', 'color-3', 'color-4', 'color-5', 'color-6', 'color-7', 'color-8', 'color-9'];
+        
+        // --- Utility Functions ---
+
+        /**
+         * Custom alert/message box to replace window.alert()
+         * @param {string} message - The message to display.
+         * @param {string} type - 'success', 'error', 'warning'.
+         */
+        function showMessage(message, type = 'info') {
+            const box = document.getElementById('message-box');
+            let bgColor = 'bg-blue-600';
+
+            switch (type) {
+                case 'success':
+                    bgColor = 'bg-green-600';
+                    break;
+                case 'error':
+                    bgColor = 'bg-red-600';
+                    break;
+                case 'warning':
+                    bgColor = 'bg-yellow-600';
+                    break;
+            }
+
+            box.className = `fixed bottom-5 right-5 p-4 rounded-lg shadow-xl text-white z-50 transition-opacity duration-300 ${bgColor}`;
+            box.textContent = message;
+            box.classList.remove('hidden');
+
+            setTimeout(() => {
+                box.classList.add('hidden');
+            }, 3000);
+        }
+
+        // --- Process Management ---
+
+        /**
+         * Class to represent a Process. Used for initial data capture.
+         */
+        class Process {
+            constructor(id, name, arrivalTime, burstTime, priority) {
+                this.id = id;
+                this.name = name;
+                this.arrivalTime = arrivalTime;
+                this.burstTime = burstTime;
+                this.priority = priority;
+                this.remainingTime = burstTime;
+                this.startTime = -1; // Response Time Calculation
+                this.completionTime = 0;
+                this.color = colorClasses[id % colorClasses.length];
+
+                // Metrics (Calculated later)
+                this.TAT = 0;
+                this.WT = 0;
+                this.RT = 0;
+            }
+        }
+
+        /**
+         * Handles the form submission to add a new process.
+         */
+        document.getElementById('add-process-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const name = document.getElementById('p_name').value.trim() || `P${processIdCounter}`;
+            const arrival = parseInt(document.getElementById('p_arrival').value);
+            const burst = parseInt(document.getElementById('p_burst').value);
+            const priority = parseInt(document.getElementById('p_priority').value);
+
+            if (isNaN(arrival) || isNaN(burst) || isNaN(priority) || burst <= 0 || arrival < 0 || priority < 1) {
+                showMessage('Please enter valid positive values for AT, BT, and Priority (BT must be > 0).', 'error');
+                return;
+            }
+
+            const newProcess = new Process(processIdCounter++, name, arrival, burst, priority);
+            processes.push(newProcess);
+
+            // Sort by Arrival Time for better list display
+            processes.sort((a, b) => a.arrivalTime - b.arrivalTime);
+            
+            renderProcessList();
+            e.target.reset(); // Clear form
+            document.getElementById('p_name').value = `P${processIdCounter}`; // Suggest next name
+            document.getElementById('p_arrival').value = processes.length > 0 ? processes[processes.length - 1].arrivalTime : 0;
+            document.getElementById('p_priority').value = 1;
+        });
+
+        /**
+         * Renders the list of processes in the input section.
+         */
+        function renderProcessList() {
+            const body = document.getElementById('process-list-body');
+            body.innerHTML = '';
+
+            if (processes.length === 0) {
+                body.innerHTML = '<tr><td colspan="5" class="p-3 text-center text-gray-500">No processes added yet.</td></tr>';
+                return;
+            }
+
+            processes.forEach(p => {
+                const row = body.insertRow();
+                row.className = 'text-gray-200 hover:bg-[#1a1a30] transition-colors duration-200';
+                row.innerHTML = `
+                    <td class="p-3 font-semibold ${p.color} text-black rounded-l-lg">${p.name}</td>
+                    <td class="p-3">${p.arrivalTime}</td>
+                    <td class="p-3">${p.burstTime}</td>
+                    <td class="p-3">${p.priority}</td>
+                    <td class="p-3 rounded-r-lg">
+                        <button onclick="removeProcess(${p.id})" class="text-red-400 hover:text-red-500 font-bold text-lg leading-none transition-colors">&times;</button>
+                    </td>
+                `;
+            });
+        }
+
+        /**
+         * Removes a process by its ID.
+         */
+        function removeProcess(id) {
+            processes = processes.filter(p => p.id !== id);
+            renderProcessList();
+        }
+
+        /**
+         * Clears all processes and resets the counter.
+         */
+        function clearProcesses() {
+            processes = [];
+            processIdCounter = 1;
+            renderProcessList();
+            document.getElementById('current-algo').textContent = 'Algorithm: Core Systems Standby';
+            document.getElementById('gantt-chart').innerHTML = '';
+            document.getElementById('metrics-body').innerHTML = '';
+            document.getElementById('results-content').classList.add('hidden');
+            showMessage('All processes cleared.', 'warning');
+        }
+
+
+        // --- Simulation Core Functions ---
+
+        /**
+         * Deep clones the processes array to reset state for a new simulation run.
+         * @returns {Array<Process>} Cloned processes.
+         */
+        function cloneProcesses() {
+            return processes.map(p => new Process(p.id, p.name, p.arrivalTime, p.burstTime, p.priority));
+        }
+
+        /**
+         * Runs the selected scheduling algorithm.
+         * @param {string} algorithm - 'priority_preemptive', 'priority_nonpreemptive', 'round_robin'.
+         */
+        function runSimulation(algorithm) {
+            if (processes.length === 0) {
+                showMessage('Please add at least one process to run the simulation.', 'error');
+                return;
+            }
+
+            // Reset results display
+            document.getElementById('results-content').classList.remove('hidden');
+            document.getElementById('status-message').classList.add('hidden');
+            
+            const runnableProcesses = cloneProcesses();
+            let ganttChart = [];
+            let completedProcesses = [];
+            let algoName = '';
+
+            try {
+                switch (algorithm) {
+                    case 'priority_preemptive':
+                        ganttChart = priorityPreemptive(runnableProcesses, completedProcesses);
+                        algoName = 'Priority (Preemptive)';
+                        break;
+                    case 'priority_nonpreemptive':
+                        ganttChart = priorityNonPreemptive(runnableProcesses, completedProcesses);
+                        algoName = 'Priority (Non-Preemptive)';
+                        break;
+                    case 'round_robin':
+                        const quantum = parseInt(document.getElementById('quantum').value);
+                        if (isNaN(quantum) || quantum <= 0) {
+                            showMessage('Invalid quantum value for Round Robin. Please use a positive integer.', 'error');
+                            return;
+                        }
+                        ganttChart = roundRobin(runnableProcesses, completedProcesses, quantum);
+                        algoName = `Round Robin (Quantum: ${quantum})`;
+                        break;
+                    default:
+                        throw new Error('Invalid algorithm selected.');
+                }
+            } catch (error) {
+                console.error("Simulation error:", error);
+                document.getElementById('status-message').textContent = `Simulation Error: ${error.message}`;
+                document.getElementById('status-message').classList.remove('hidden');
+                return;
+            }
+            
+            // Calculate metrics for all completed processes
+            completedProcesses.forEach(p => calculateMetrics(p));
+
+            // Render Results
+            document.getElementById('current-algo').textContent = `Algorithm: ${algoName}`;
+            renderGanttChart(ganttChart);
+            renderMetrics(completedProcesses, ganttChart);
+            showMessage(`${algoName} simulation completed successfully!`, 'success');
+
+            // --- Smooth Scroll Animation on Button Click ---
+            document.getElementById('results-section').scrollIntoView({ behavior: 'smooth' });
+        }
+
+
+        // --- Scheduling Algorithms Implementation ---
+
+        /**
+         * Priority Scheduling (Preemptive)
+         */
+        function priorityPreemptive(processes, completedProcesses) {
+            let currentTime = 0;
+            let finishedCount = 0;
+            let ganttChart = [];
+            const totalBurstTime = processes.reduce((sum, p) => sum + p.burstTime, 0);
+
+            // Clone processes for the simulation state
+            const readyProcesses = processes.map(p => ({ ...p, remainingTime: p.burstTime, startTime: -1 }));
+            const N = readyProcesses.length;
+            let runningProcess = null;
+
+            while (finishedCount < N) {
+                // 1. Get all arrived and unfinished processes
+                const arrivedProcesses = readyProcesses.filter(p => p.arrivalTime <= currentTime && p.remainingTime > 0);
+
+                if (arrivedProcesses.length > 0) {
+                    // 2. Select the process with the highest priority (lowest number)
+                    let nextProcess = arrivedProcesses.sort((a, b) => a.priority - b.priority)[0];
+                    
+                    // 3. Preemption Check
+                    if (runningProcess && runningProcess.remainingTime > 0) {
+                        if (nextProcess.priority < runningProcess.priority) {
+                            // Preempt the current running process
+                            runningProcess = nextProcess;
+                        } else if (nextProcess.priority === runningProcess.priority) {
+                            // Tie-breaker: Check arrival time (or index if ATs are same)
+                            if (nextProcess.arrivalTime < runningProcess.arrivalTime) {
+                                runningProcess = nextProcess;
+                            }
+                        }
+                    } else if (!runningProcess || runningProcess.remainingTime === 0) {
+                        runningProcess = nextProcess;
+                    }
+
+                } else if (runningProcess && runningProcess.remainingTime === 0) {
+                    // The last running process finished, but no new process arrived yet
+                    runningProcess = null;
+                }
+
+                // 4. Handle CPU Idle (or switch if runningProcess is null)
+                if (!runningProcess || runningProcess.remainingTime <= 0) {
+                    // Check if there is any unfinished process that hasn't arrived yet
+                    const nextArrival = readyProcesses
+                        .filter(p => p.remainingTime > 0)
+                        .map(p => p.arrivalTime)
+                        .sort((a, b) => a - b)[0];
+
+                    if (nextArrival !== undefined) {
+                        // CPU Idle until the next arrival
+                        const idleDuration = nextArrival - currentTime;
+                        if (idleDuration > 0) {
+                            ganttChart.push({ name: 'Idle', start: currentTime, end: nextArrival, duration: idleDuration, color: 'bg-gray-700' });
+                            currentTime = nextArrival;
+                            continue; // Restart loop to check for arrived processes
+                        }
+                    } else {
+                        // All processes finished and no further processes to wait for (Shouldn't happen in the main loop if finishedCount < N)
+                        break;
+                    }
+                }
+
+                // 5. Execute for one time unit (preemption happens at every step)
+                if (runningProcess && runningProcess.remainingTime > 0) {
+                    if (runningProcess.startTime === -1) {
+                        runningProcess.startTime = currentTime; // Record Response Time
+                    }
+
+                    runningProcess.remainingTime--;
+                    
+                    // Add to Gantt Chart (handle context switch)
+                    const lastSegment = ganttChart.length > 0 ? ganttChart[ganttChart.length - 1] : null;
+                    if (lastSegment && lastSegment.name === runningProcess.name) {
+                        lastSegment.end = currentTime + 1;
+                        lastSegment.duration++;
+                    } else {
+                        ganttChart.push({
+                            name: runningProcess.name,
+                            start: currentTime,
+                            end: currentTime + 1,
+                            duration: 1,
+                            color: runningProcess.color
+                        });
+                    }
+
+                    // 6. Check for Completion
+                    if (runningProcess.remainingTime === 0) {
+                        runningProcess.completionTime = currentTime + 1;
+                        completedProcesses.push({ ...runningProcess });
+                        finishedCount++;
+                        runningProcess = null; // Context switch
+                    }
+                }
+
+                currentTime++;
+                // Safety break for extremely long simulations
+                if (currentTime > totalBurstTime * 2 + readyProcesses.length * 10) break; 
+            }
+
+            return ganttChart;
+        }
+
+        /**
+         * Priority Scheduling (Non-Preemptive)
+         */
+        function priorityNonPreemptive(processes, completedProcesses) {
+            let currentTime = 0;
+            let finishedCount = 0;
+            let ganttChart = [];
+            const N = processes.length;
+            
+            // Clone and sort the list of processes by Arrival Time initially
+            const runnableProcesses = processes.map(p => ({ ...p, remainingTime: p.burstTime, startTime: -1 }));
+            runnableProcesses.sort((a, b) => a.arrivalTime - b.arrivalTime);
+            
+            const simulationProcesses = [...runnableProcesses]; // A list we can modify
+            let runningProcess = null;
+
+            while (finishedCount < N) {
+                // 1. Check for CPU Idle Time (if no process is running and there are arrived, but not finished processes)
+                if (!runningProcess) {
+                    const arrivedProcesses = simulationProcesses.filter(p => p.arrivalTime <= currentTime && p.remainingTime > 0);
+
+                    if (arrivedProcesses.length === 0) {
+                        // Check for the next arrival
+                        const nextArrival = simulationProcesses
+                            .filter(p => p.remainingTime > 0)
+                            .map(p => p.arrivalTime)
+                            .sort((a, b) => a - b)[0];
+
+                        if (nextArrival !== undefined) {
+                            // CPU Idle until the next arrival
+                            const idleDuration = nextArrival - currentTime;
+                            if (idleDuration > 0) {
+                                ganttChart.push({ name: 'Idle', start: currentTime, end: nextArrival, duration: idleDuration, color: 'bg-gray-700' });
+                                currentTime = nextArrival;
+                                continue;
+                            }
+                        } else {
+                            // All finished
+                            break;
+                        }
+                    } else {
+                        // 2. Select the process with the highest priority (lowest number) among arrived processes
+                        runningProcess = arrivedProcesses.sort((a, b) => a.priority - b.priority)[0];
+                    }
+                }
+
+                // 3. Execute the selected process to completion (Non-Preemptive)
+                if (runningProcess) {
+                    const burst = runningProcess.remainingTime; // The full remaining burst
+                    const start = currentTime;
+                    
+                    if (runningProcess.startTime === -1) {
+                        runningProcess.startTime = currentTime; // Record Response Time
+                    }
+
+                    runningProcess.remainingTime = 0; // Mark as completed
+                    currentTime += burst;
+                    runningProcess.completionTime = currentTime;
+
+                    ganttChart.push({
+                        name: runningProcess.name,
+                        start: start,
+                        end: currentTime,
+                        duration: burst,
+                        color: runningProcess.color
+                    });
+                    
+                    // Add to completed list and mark as finished
+                    completedProcesses.push({ ...runningProcess });
+                    finishedCount++;
+                    runningProcess = null; // Finished, ready for next selection
+                }
+            }
+
+            return ganttChart;
+        }
+
+        /**
+         * Round Robin Scheduling
+         */
+        function roundRobin(processes, completedProcesses, quantum) {
+            let currentTime = 0;
+            let finishedCount = 0;
+            let ganttChart = [];
+            const N = processes.length;
+            
+            // Clone processes for the simulation state
+            const runnableProcesses = processes.map(p => ({ ...p, remainingTime: p.burstTime, startTime: -1 }));
+            runnableProcesses.sort((a, b) => a.arrivalTime - b.arrivalTime);
+            
+            let readyQueue = []; // Holds process references
+            let processMap = new Map(); // Map ID to process object for quick update
+            runnableProcesses.forEach(p => processMap.set(p.id, p));
+
+            // Set of IDs already in the queue to prevent duplicates
+            let inQueue = new Set(); 
+
+            // Initialize queue with first arriving process
+            const firstArrival = runnableProcesses.length > 0 ? runnableProcesses[0].arrivalTime : 0;
+            currentTime = firstArrival;
+
+
+            // Helper to add arrived processes to queue
+            const updateQueue = () => {
+                runnableProcesses.forEach(p => {
+                    if (p.arrivalTime <= currentTime && p.remainingTime > 0 && !inQueue.has(p.id)) {
+                        readyQueue.push(p);
+                        inQueue.add(p.id);
+                    }
+                });
+                // Sort queue by arrival time for tie-breaking
+                readyQueue.sort((a, b) => a.arrivalTime - b.arrivalTime);
+            };
+            
+            // Update queue to include initial arrivals
+            updateQueue();
+
+
+            while (finishedCount < N) {
+                // Handle Idle time if queue is empty but not all processes are finished
+                if (readyQueue.length === 0) {
+                    const nextArrival = runnableProcesses
+                        .filter(p => p.remainingTime > 0)
+                        .map(p => p.arrivalTime)
+                        .sort((a, b) => a - b)[0];
+                    
+                    if (nextArrival !== undefined) {
+                        const idleDuration = nextArrival - currentTime;
+                        if (idleDuration > 0) {
+                            ganttChart.push({ name: 'Idle', start: currentTime, end: nextArrival, duration: idleDuration, color: 'bg-gray-700' });
+                            currentTime = nextArrival;
+                            updateQueue(); // Check for new arrivals after idle time
+                            continue;
+                        }
+                    } else {
+                        // All finished
+                        break;
+                    }
+                }
+
+                if (readyQueue.length > 0) {
+                    // 1. Dequeue the running process
+                    let runningProcess = readyQueue.shift();
+                    inQueue.delete(runningProcess.id);
+
+                    if (runningProcess.startTime === -1) {
+                        runningProcess.startTime = currentTime; // Record Response Time
+                    }
+
+                    // 2. Determine execution time (min of quantum or remaining time)
+                    const executeTime = Math.min(quantum, runningProcess.remainingTime);
+                    const start = currentTime;
+
+                    // 3. Execute
+                    runningProcess.remainingTime -= executeTime;
+                    currentTime += executeTime;
+                    
+                    // 4. Update Gantt Chart
+                    ganttChart.push({
+                        name: runningProcess.name,
+                        start: start,
+                        end: currentTime,
+                        duration: executeTime,
+                        color: runningProcess.color
+                    });
+
+                    // 5. Update queue for new arrivals during the executed time
+                    updateQueue();
+
+                    // 6. Check for Completion or Requeue
+                    if (runningProcess.remainingTime === 0) {
+                        // Process finished
+                        runningProcess.completionTime = currentTime;
+                        completedProcesses.push({ ...runningProcess });
+                        finishedCount++;
+                    } else {
+                        // Requeue: add back to the end of the ready queue
+                        readyQueue.push(runningProcess);
+                        inQueue.add(runningProcess.id);
+                    }
+                }
+            }
+
+            return ganttChart;
+        }
+
+
+        // --- Metrics and Rendering ---
+
+        /**
+         * Calculates the standard scheduling metrics for a completed process.
+         */
+        function calculateMetrics(p) {
+            p.TAT = p.completionTime - p.arrivalTime; // Turnaround Time = CT - AT
+            p.WT = p.TAT - p.burstTime;             // Waiting Time = TAT - BT
+            p.RT = p.startTime - p.arrivalTime;       // Response Time = First Start Time - AT
+        }
+
+        /**
+         * Renders the visual Gantt Chart.
+         */
+        function renderGanttChart(ganttChart) {
+            const chartDiv = document.getElementById('gantt-chart');
+            chartDiv.innerHTML = '';
+            
+            if (ganttChart.length === 0) return;
+
+            const totalTime = ganttChart[ganttChart.length - 1].end;
+            if (totalTime === 0) return;
+
+            const maxSegments = 100;
+            const scaleFactor = 100 / Math.min(totalTime, maxSegments);
+
+            ganttChart.forEach((segment, index) => {
+                const widthPercentage = (segment.duration * scaleFactor).toFixed(2);
+                const isIdle = segment.name === 'Idle';
+                
+                const segmentDiv = document.createElement('div');
+                segmentDiv.className = `gantt-segment ${segment.color} ${isIdle ? 'text-gray-400 font-light' : 'text-black font-semibold'} flex-shrink-0`;
+                segmentDiv.style.width = `${Math.max(widthPercentage, 1)}%`;
+                segmentDiv.style.minWidth = segment.duration === 0 ? '0' : '20px';
+                
+                segmentDiv.innerHTML = `
+                    <span class="truncate">${segment.name}</span>
+                    <span class="time-label">${segment.end}</span>
+                `;
+                
+                chartDiv.appendChild(segmentDiv);
+            });
+
+            // Add the final '0' time label at the start
+            const initialTimeLabel = document.createElement('span');
+            initialTimeLabel.className = 'absolute bottom-[-20px] left-0 font-light text-sm text-purple-400';
+            initialTimeLabel.textContent = '0';
+            chartDiv.style.position = 'relative';
+            chartDiv.appendChild(initialTimeLabel);
+        }
+
+        /**
+         * Renders the per-process and summary metrics tables.
+         */
+        function renderMetrics(completedProcesses, ganttChart) {
+            const body = document.getElementById('metrics-body');
+            body.innerHTML = '';
+            
+            if (completedProcesses.length === 0) {
+                body.innerHTML = '<tr><td colspan="8" class="p-3 text-center text-gray-500">No processes completed.</td></tr>';
+                // Reset summary metrics
+                document.getElementById('cpu-utilization').textContent = '0.00%';
+                document.getElementById('avg-tat').textContent = '0.00';
+                document.getElementById('avg-wt').textContent = '0.00';
+                document.getElementById('avg-rt').textContent = '0.00';
+                return;
+            }
+
+            // Calculate Averages and Total Metrics
+            const totalTAT = completedProcesses.reduce((sum, p) => sum + p.TAT, 0);
+            const totalWT = completedProcesses.reduce((sum, p) => sum + p.WT, 0);
+            const totalRT = completedProcesses.reduce((sum, p) => sum + p.RT, 0);
+            const totalBurstTime = completedProcesses.reduce((sum, p) => sum + p.burstTime, 0);
+            const totalTime = ganttChart.length > 0 ? ganttChart[ganttChart.length - 1].end : 0;
+            
+            const avgTAT = totalTAT / completedProcesses.length;
+            const avgWT = totalWT / completedProcesses.length;
+            const avgRT = totalRT / completedProcesses.length;
+            const cpuUtil = totalTime > 0 ? (totalBurstTime / totalTime) * 100 : 0;
+
+            // Render Summary Metrics
+            document.getElementById('cpu-utilization').textContent = `${cpuUtil.toFixed(2)}%`;
+            document.getElementById('avg-tat').textContent = avgTAT.toFixed(2);
+            document.getElementById('avg-wt').textContent = avgWT.toFixed(2);
+            document.getElementById('avg-rt').textContent = avgRT.toFixed(2);
+
+            // Render Per-Process Metrics
+            completedProcesses.sort((a, b) => a.id - b.id).forEach(p => {
+                const row = body.insertRow();
+                row.className = 'text-gray-200 hover:bg-[#1a1a30] transition-colors duration-200';
+                row.innerHTML = `
+                    <td class="p-3 font-semibold ${p.color} text-black">${p.name}</td>
+                    <td class="p-3">${p.arrivalTime}</td>
+                    <td class="p-3">${p.burstTime}</td>
+                    <td class="p-3">${p.priority}</td>
+                    <td class="p-3 font-medium text-green-300">${p.completionTime}</td>
+                    <td class="p-3">${p.TAT.toFixed(2)}</td>
+                    <td class="p-3">${p.WT.toFixed(2)}</td>
+                    <td class="p-3">${p.RT.toFixed(2)}</td>
+                `;
+            });
+        }
+
+
+        // --- Animation and Multiverse Scroll Effects ---
+
+        /**
+         * Handles the main scroll-based parallax and element reveal animations.
+         */
+        function handleScrollAnimations() {
+            const viewportHeight = window.innerHeight;
+
+            // Section Reveal Animation (Fades in elements as they enter the viewport)
+            document.querySelectorAll('.scroll-animate').forEach(element => {
+                const elementTop = element.getBoundingClientRect().top;
+                
+                // Activate animation when element is halfway into the viewport
+                if (elementTop < viewportHeight * 0.75) {
+                    element.classList.add('active');
+                } else {
+                    // Optional: deactivate when scrolling away
+                    element.classList.remove('active'); 
+                }
+            });
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            renderProcessList();
+            document.getElementById('results-content').classList.add('hidden');
+            document.getElementById('p_name').value = `P${processIdCounter}`; // Initial name suggestion
+
+            // Set up scroll event listener for content reveal animations
+            window.addEventListener('scroll', handleScrollAnimations);
+            handleScrollAnimations();
+        });
+
+    </script>
+</body>
+</html>
