@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Updated Title to reflect removal of explicit 'Kernel' reference -->
+    <title>Inter-Process Communication (IPC) Nexus</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* FUTURISTIC THEME COLORS */
+        :root {
+            --color-bg-deep: #0a0a0a; /* Deep Black */
+            --color-card-bg: #1f2937; /* Dark Slate */
+            --color-accent-cyan: #06b6d4; /* Electric Cyan */
+            --color-accent-violet: #a855f7; /* Neon Violet */
+            --color-success: #84cc16; /* Lime Green */
+            --color-error: #f43f5e; /* Rose Red */
+            --color-text-primary: #f3f4f6; /* Off-White */
+            --color-shm-data: #fcd34d; /* Amber */
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            color: var(--color-text-primary);
+            position: relative;
+            background-color: var(--color-bg-deep);
+            overflow-x: hidden;
+        }
+
+        /* --- VIDEO BACKGROUND STYLES (OPACITY INCREASED) --- */
+        #video-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -10;
+            opacity: 0.4; /* Set to 0.4 opacity (60% transparent) for better visibility */
+        }
+        /* ---------------------------------- */
+
+        .card {
+            background-color: var(--color-card-bg);
+            border: 1px solid #374151;
+            box-shadow: 0 0 0 rgba(6, 182, 212, 0); 
+            transition: box-shadow 0.3s ease-in-out, transform 0.3s ease-in-out, background-color 0.8s ease-in-out;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* NEW: Hover effect for glow and slight lift */
+        .card:hover {
+            /* BRIGHTER GLOW EFFECT ON HOVER */
+            box-shadow: 0 0 40px var(--color-accent-cyan), 0 0 20px var(--color-accent-violet);
+            transform: translateY(-5px);
+        }
+
+        .process-card {
+            min-height: 120px;
+            border-left: 4px solid var(--color-accent-cyan);
+            padding-left: 1.5rem;
+        }
+        .btn-action {
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+        }
+        .btn-action:hover {
+            transform: translateY(-2px);
+            /* Neon hover glow */
+            box-shadow: 0 0 20px var(--color-accent-cyan);
+        }
+        .btn-action-success {
+            background-color: var(--color-success);
+        }
+        .btn-action-error {
+            background-color: var(--color-error);
+        }
+
+        /* --- Updated Scroll Reveal Classes (Focus on entrance/exit only) --- */
+        .ipc-section-hidden {
+            opacity: 0;
+            transform: translateY(100px) scale(0.9);
+            filter: blur(8px);
+            /* Ensure no glow when hidden */
+            box-shadow: 0 0 0 rgba(0, 0, 0, 0); 
+            transition: opacity 1.0s ease-out, transform 1.0s ease-out, filter 1.0s ease-out, box-shadow 1.0s ease-in-out;
+            perspective: 1000px;
+        }
+        .ipc-section-visible {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            filter: blur(0);
+            /* REMOVED GLOW FROM SCROLL VISIBILITY */
+        }
+        /* --------------------------------------------------- */
+
+
+        /* Animation for Pipes - Electric Data Packet */
+        .pipe-data-animation {
+            background-color: var(--color-success);
+            position: absolute;
+            height: 10px;
+            width: 10px;
+            border-radius: 50%;
+            /* Electric pulse shadow */
+            box-shadow: 0 0 8px 2px var(--color-success);
+            animation: move-data 2.5s cubic-bezier(0.4, 0, 0.2, 1) forwards; /* Faster, smoother ease */
+        }
+
+        @keyframes move-data {
+            0% {
+                left: 0;
+                opacity: 0;
+                transform: scale(0.5);
+            }
+            10% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            90% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            100% {
+                left: calc(100% - 10px);
+                opacity: 0;
+                transform: scale(0.5);
+            }
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-10">
+
+    <!-- Video Background -->
+    <video autoplay loop muted playsinline id="video-background">
+        <source src="125e34464a880ff622733afe8f2b3374.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+
+    <!-- Loader Screen (Webpage opening animation) -->
+    <div id="loader-screen" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-gray-900 transition-opacity duration-1000">
+        <div class="text-4xl font-extrabold text-cyan-400 tracking-widest mb-4 animate-pulse" style="text-shadow: 0 0 10px #06b6d4;">
+            SYSTEM INITIALIZING...
+        </div>
+        <div class="w-64 h-1 bg-gray-700 rounded-full overflow-hidden">
+            <div id="loader-bar" class="h-full bg-accent-violet transition-all duration-200" style="width: 0;"></div>
+        </div>
+    </div>
+    
+    <!-- Main Content Wrapper, initially hidden -->
+    <div id="main-content" class="opacity-0 transition-opacity duration-1000">
+
+        <div class="max-w-7xl mx-auto">
+            <header class="text-center mb-16">
+                <!-- UPDATED: Removed "Kernel Interface" -->
+                <h1 class="text-5xl sm:text-6xl font-extrabold text-white mb-3 tracking-wider" style="text-shadow: 0 0 15px var(--color-accent-cyan);">
+                    IPC Nexus
+                </h1>
+                <p class="text-xl text-gray-400 font-light">Inter-Process Communication: High-Speed Data Synchronization and Messaging.</p>
+            </header>
+
+            <!-- IPC OVERVIEW -->
+            <section id="ipc-overview" class="card p-8 rounded-2xl mb-16 ipc-section-hidden">
+                <h2 class="text-4xl font-bold mb-4 text-accent-violet border-b border-accent-violet/50 pb-2">IPC: CORE PRINCIPLES</h2>
+                
+                <!-- UPDATED: Removed the entire Kernel Interface column. The remaining column is now full-width. -->
+                <div class="flex flex-col md:flex-row space-y-6 md:space-y-0 md:space-x-8">
+                    <div class="w-full">
+                        <h3 class="text-2xl font-semibold mb-3 text-cyan-400">What is Inter-Process Communication (IPC)?</h3>
+                        <p class="text-gray-300 font-light mb-4">**IPC** refers to mechanisms used to allow independent processes to communicate and synchronize their actions. Since processes are typically isolated to prevent interference, IPC is essential for applications built from multiple concurrent tasks (e.g., client/server architecture, pipe-lining data).</p>
+                        <ul class="list-disc list-inside text-sm text-gray-400 font-mono space-y-1 ml-4">
+                            <li>**Isolation Bypass:** Enables controlled exchange of data and signals.</li>
+                            <li>**Concurrency:** Facilitates cooperative execution among separate tasks.</li>
+                            <li>**Key Goals:** Data Transfer and Process Synchronization.</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+            <!-- END IPC OVERVIEW -->
+
+            <!-- Container for all 3 demos -->
+            <div class="space-y-16">
+
+                <!-- 1. Shared Memory Demonstration -->
+                <section id="shared-memory" class="card p-8 rounded-2xl ipc-section-hidden">
+                    <h2 class="text-4xl font-bold mb-6 text-cyan-400 border-b border-cyan-700 pb-2">1. Shared Memory <span class="text-lg text-gray-500 ml-3">(High Velocity)</span></h2>
+                    
+                    <!-- EXPLANATION BLOCK -->
+                    <div class="mb-8 max-w-4xl border-l-4 border-shm-data pl-4 py-2 bg-gray-900/50 rounded-md">
+                        <!-- UPDATED: Removed "avoids kernel intervention" -->
+                        <p class="text-gray-300 font-light mb-2">**Shared Memory** is the most efficient IPC method. Processes map a region of memory into their address space, allowing direct read/write access without requiring intermediate system copying for data transfer.</p>
+                        <ul class="list-disc list-inside text-sm text-gray-400 font-mono space-y-1 ml-4">
+                            <li>**Efficiency:** Highest speed, lowest latency.</li>
+                            <li>**Mechanism:** Data is exchanged via direct memory access (no copying).</li>
+                            <li>**Key Constraint:** Requires explicit synchronization (Semaphores/Mutexes) by the programmer to prevent race conditions.</li>
+                        </ul>
+                    </div>
+                    <!-- END EXPLANATION BLOCK -->
+
+                    <div class="flex flex-col lg:flex-row items-center justify-between space-y-10 lg:space-y-0 lg:space-x-10">
+
+                        <!-- Process 1 (Writer) -->
+                        <div class="process-card p-6 rounded-lg w-full lg:w-1/3 border-lime-500">
+                            <h3 class="text-xl font-semibold mb-3 text-lime-400">PROCESS A <span class="font-normal text-sm text-gray-400">:: WRITER</span></h3>
+                            <input type="text" id="shm-input" placeholder=">> Input Data Stream" class="w-full p-3 rounded-md bg-gray-800 border border-lime-600 text-white mb-4 focus:outline-none focus:ring-2 focus:ring-lime-400 font-mono">
+                            <button onclick="writeToSharedMemory()" class="btn-action w-full btn-action-success hover:bg-lime-600 text-gray-900 font-bold py-3 px-4 rounded-lg shadow-lime-900">
+                                EXECUTE WRITE (SET MEMORY)
+                            </button>
+                        </div>
+
+                        <!-- Shared Memory Block -->
+                        <div class="card p-6 rounded-xl w-full lg:w-1/3 border-4 border-dashed border-shm-data bg-gray-900 shadow-xl min-h-[180px] flex flex-col justify-center">
+                            <!-- Retained neutral title -->
+                            <h3 class="text-2xl font-bold text-center text-shm-data mb-3">SYSTEM MEMORY SEGMENT</h3>
+                            <div id="shm-block" class="text-center break-words text-xl font-mono p-3 bg-gray-800 rounded-lg text-shm-data border border-gray-700 min-h-[60px] flex items-center justify-center">
+                                (DATA NULL)
+                            </div>
+                        </div>
+
+                        <!-- Process 2 (Reader) -->
+                        <div class="process-card p-6 rounded-lg w-full lg:w-1/3 border-rose-500">
+                            <h3 class="text-xl font-semibold mb-3 text-rose-400">PROCESS B <span class="font-normal text-sm text-gray-400">:: READER</span></h3>
+                            <div id="shm-output" class="text-lg font-mono p-3 rounded-md bg-gray-800 border border-rose-600 text-rose-200 h-16 mb-4 flex items-center overflow-hidden">
+                                // Awaiting Signal...
+                            </div>
+                            <button onclick="readFromSharedMemory()" class="btn-action w-full btn-action-error hover:bg-rose-600 text-white font-bold py-3 px-4 rounded-lg shadow-rose-900">
+                                EXECUTE READ (ACCESS MEMORY)
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 2. Pipes Demonstration (Unidirectional) -->
+                <section id="pipes" class="card p-8 rounded-2xl ipc-section-hidden">
+                    <h2 class="text-4xl font-bold mb-6 text-cyan-400 border-b border-cyan-700 pb-2">2. Unidirectional Pipe <span class="text-lg text-gray-500 ml-3">(Sequential Flow)</span></h2>
+                    
+                    <!-- EXPLANATION BLOCK -->
+                    <div class="mb-8 max-w-4xl border-l-4 border-success pl-4 py-2 bg-gray-900/50 rounded-md">
+                        <!-- UPDATED: Removed "managed by the kernel" -->
+                        <p class="text-gray-300 font-light mb-2">Pipes establish a stream-based, unidirectional connection between processes. They are often used for related processes where output from one serves as input to another.</p>
+                        <ul class="list-disc list-inside text-sm text-gray-400 font-mono space-y-1 ml-4">
+                            <li>**Flow:** Strictly Unidirectional (one-way); Bidirectional requires two pipes.</li>
+                            <li>**Structure:** Operates as a First-In, First-Out (FIFO) byte stream.</li>
+                            <li>**Limitation:** Typically restricted to processes sharing a common ancestor.</li>
+                        </ul>
+                    </div>
+                    <!-- END EXPLANATION BLOCK -->
+
+                    <div class="flex items-center justify-between space-x-8">
+                        <!-- Process Sender -->
+                        <div class="process-card p-6 rounded-lg w-1/3 border-lime-500">
+                            <h3 class="text-xl font-semibold mb-3 text-lime-400">TRANSMITTER <span class="font-normal text-sm text-gray-400">:: WRITE END</span></h3>
+                            <input type="text" id="pipe-input" placeholder=">> Data Packet" class="w-full p-3 rounded-md bg-gray-800 border border-lime-600 text-white mb-4 focus:outline-none focus:ring-2 focus:ring-lime-400 font-mono">
+                            <button onclick="sendViaPipe()" class="btn-action w-full btn-action-success hover:bg-lime-600 text-gray-900 font-bold py-3 px-4 rounded-lg">
+                                INITIATE TRANSFER
+                            </button>
+                        </div>
+
+                        <!-- Pipe Visualization -->
+                        <div class="relative w-1/3 flex flex-col items-center">
+                            <div class="w-full h-3 bg-gray-800 rounded-full my-4 border border-cyan-600 shadow-lg shadow-cyan-900/50 flex items-center justify-center">
+                                <!-- UPDATED: Removed "KERNEL" from the buffer label -->
+                                <span class="text-sm font-mono text-cyan-400 absolute -top-8 bg-gray-900 px-2 py-1 rounded-sm border border-cyan-700">DATA BUFFER (FIFO)</span>
+                            </div>
+                            <div id="pipe-animation-container" class="w-full h-4 relative">
+                                <!-- Data animation inserted here -->
+                            </div>
+                            <span class="text-3xl mt-4 text-cyan-400 font-extrabold" title="Unidirectional Flow">→</span>
+                        </div>
+
+                        <!-- Process Receiver -->
+                        <div class="process-card p-6 rounded-lg w-1/3 border-rose-500">
+                            <h3 class="text-xl font-semibold mb-3 text-rose-400">RECEIVER <span class="font-normal text-sm text-gray-400">:: READ END</span></h3>
+                            <div id="pipe-output" class="text-lg font-mono p-3 rounded-md bg-gray-800 border border-rose-600 text-rose-200 h-16 mb-4 flex items-center overflow-hidden">
+                                // Listening for stream...
+                            </div>
+                            <button onclick="receiveFromPipe()" class="btn-action w-full btn-action-error hover:bg-rose-600 text-white font-bold py-3 px-4 rounded-lg">
+                                DEQUEUE & READ
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 3. Message Passing Demonstration -->
+                <section id="message-passing" class="card p-8 rounded-2xl ipc-section-hidden">
+                    <h2 class="text-4xl font-bold mb-6 text-cyan-400 border-b border-cyan-700 pb-2">3. Message Passing <span class="text-lg text-gray-500 ml-3">(Structured Exchange)</span></h2>
+                    
+                    <!-- EXPLANATION BLOCK -->
+                    <div class="mb-8 max-w-4xl border-l-4 border-accent-violet pl-4 py-2 bg-gray-900/50 rounded-md">
+                        <!-- UPDATED: Removed "kernel-managed" -->
+                        <p class="text-gray-300 font-light mb-2">**Message Passing** uses structured, discrete messages sent to a central queue. This method handles synchronization and ensures reliable transfer of complex commands or data packets.</p>
+                        <ul class="list-disc list-inside text-sm text-gray-400 font-mono space-y-1 ml-4">
+                            <li>**Structure:** Data is copied twice (sender to buffer, buffer to receiver), incurring overhead.</li>
+                            <li>**Benefit:** Easier synchronization; messages are structured with a type/priority.</li>
+                            <li>**Overhead:** Higher latency compared to Shared Memory due to data copying.</li>
+                        </ul>
+                    </div>
+                    <!-- END EXPLANATION BLOCK -->
+
+                    <div class="flex flex-col lg:flex-row items-center justify-between space-y-10 lg:space-y-0 lg:space-x-10">
+
+                        <!-- Process A (Sender) -->
+                        <div class="process-card p-6 rounded-lg w-full lg:w-1/3 border-lime-500">
+                            <h3 class="text-xl font-semibold mb-3 text-lime-400">TRANSMIT NODE <span class="font-normal text-sm text-gray-400">:: P-SEND</span></h3>
+                            <select id="msg-type" class="w-full p-3 rounded-md bg-gray-800 border border-lime-600 text-white mb-3 focus:outline-none focus:ring-2 focus:ring-lime-400 font-mono">
+                                <option value="DATA">DATA (Type 1)</option>
+                                <option value="CMD">COMMAND (Type 2)</option>
+                                <option value="ERROR">ERROR (Type 3)</option>
+                            </select>
+                            <input type="text" id="msg-payload" placeholder=">> Message Payload" class="w-full p-3 rounded-md bg-gray-800 border border-lime-600 text-white mb-4 focus:outline-none focus:ring-2 focus:ring-lime-400 font-mono">
+                            <button onclick="sendMessage()" class="btn-action w-full btn-action-success hover:bg-lime-600 text-gray-900 font-bold py-3 px-4 rounded-lg">
+                                SEND MESSAGE PACKET
+                            </button>
+                        </div>
+
+                        <!-- Message Queue -->
+                        <div class="card p-4 rounded-xl w-full lg:w-1/3 border-4 border-dashed border-accent-violet bg-gray-900 shadow-xl min-h-[180px]">
+                            <!-- UPDATED: Removed "KERNEL" from the queue label -->
+                            <h3 class="text-xl font-bold text-center text-accent-violet mb-3">SECURE MESSAGE QUEUE</h3>
+                            <div id="msg-queue" class="space-y-2 overflow-y-auto max-h-[100px] p-2 bg-gray-800 rounded-lg border border-gray-700">
+                                <!-- Messages will appear here -->
+                                <div class="text-center text-gray-500 text-sm">Waiting for incoming packets...</div>
+                            </div>
+                        </div>
+
+                        <!-- Process B (Receiver) -->
+                        <div class="process-card p-6 rounded-lg w-full lg:w-1/3 border-rose-500">
+                            <h3 class="text-xl font-semibold mb-3 text-rose-400">RECEIVE NODE <span class="font-normal text-sm text-gray-400">:: P-RECEIVE</span></h3>
+                            <div id="msg-last-received" class="text-sm font-mono p-3 rounded-md bg-gray-800 border border-rose-600 text-rose-200 h-16 mb-4 overflow-auto flex items-center">
+                                // No data link established.
+                            </div>
+                            <button onclick="receiveMessage()" class="btn-action w-full btn-action-error hover:bg-rose-600 text-white font-bold py-3 px-4 rounded-lg">
+                                RETRIEVE NEXT PACKET
+                            </button>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // Global state for simulations
+        let sharedMemory = "(DATA NULL)";
+        let pipeQueue = [];
+        let messageQueue = [];
+
+        // --- Utility Functions ---
+
+        /**
+         * Clears an element's animation and sets up the listener for the end.
+         * @param {HTMLElement} element 
+         * @param {string} animationClass 
+         */
+        function animateElement(element, animationClass) {
+            // Remove previous animation state
+            element.classList.remove(animationClass);
+            void element.offsetWidth; // Trigger reflow
+            element.classList.add(animationClass);
+        }
+
+        // --- Logic: Loader Screen and Scroll Reveal (Updated for bi-directional hide/show) ---
+        
+        const loaderScreen = document.getElementById('loader-screen');
+        const mainContent = document.getElementById('main-content');
+        const loaderBar = document.getElementById('loader-bar');
+
+        // 1. Initial Loading Animation (The "webpage opening animation")
+        function startLoader() {
+            let progress = 0;
+            // Use a slight delay to make the bar fill visible
+            const interval = setInterval(() => {
+                progress += 5;
+                loaderBar.style.width = `${progress}%`;
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    // Simulate system check delay for a better effect
+                    setTimeout(finalizeLoad, 300); 
+                }
+            }, 100);
+        }
+
+        function finalizeLoad() {
+            // Fade out loader
+            loaderScreen.style.opacity = '0';
+            
+            // Fade in main content
+            mainContent.style.opacity = '1';
+            
+            setTimeout(() => {
+                loaderScreen.style.display = 'none';
+            }, 1000); // Matches CSS transition duration
+
+            // Start observing sections after the main content is visible
+            setupScrollReveal();
+        }
+
+        // 2. Scroll Reveal Setup (Updated to handle both entry (show) and exit (hide))
+        function setupScrollReveal() {
+            // Target all sections that need to be revealed, including the new 'ipc-overview'
+            const sections = document.querySelectorAll('.card');
+            
+            // Explicitly set the initial state for all sections before observation starts
+            sections.forEach(section => {
+                if (section.id && section.id !== 'shm-block') { // Exclude shm-block which is internal to shared memory section
+                    section.classList.remove('ipc-section-visible');
+                    section.classList.add('ipc-section-hidden');
+                }
+            });
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    const target = entry.target;
+                    
+                    if (entry.isIntersecting) {
+                        // Element is entering the viewport (Show/Reveal)
+                        target.classList.remove('ipc-section-hidden');
+                        target.classList.add('ipc-section-visible');
+                    } else {
+                        // Element is leaving the viewport (Hide/Disappear)
+                        // Only hide if it's currently visible
+                        if (target.classList.contains('ipc-section-visible')) {
+                            target.classList.remove('ipc-section-visible');
+                            target.classList.add('ipc-section-hidden');
+                        }
+                    }
+                });
+            }, {
+                // By setting the threshold to a low value and allowing continuous observation, 
+                // the elements will toggle visibility based on whether they are in view.
+                threshold: 0.1 
+            });
+
+            sections.forEach(section => {
+                    if (section.id && section.id !== 'shm-block') {
+                        observer.observe(section);
+                    }
+            });
+        }
+        
+        // Initial setup
+        document.addEventListener('DOMContentLoaded', () => {
+            startLoader();
+            updateMessageQueueDisplay();
+        });
+
+
+        // --- 1. Shared Memory Logic ---
+
+        function writeToSharedMemory() {
+            const inputElement = document.getElementById('shm-input');
+            const data = inputElement.value.trim();
+            const shmBlock = document.getElementById('shm-block');
+
+            if (!data) {
+                shmBlock.textContent = "FATAL ERROR: INPUT STREAM EMPTY!";
+                shmBlock.classList.add('text-error', 'animate-pulse', 'border-red-500');
+                setTimeout(() => {
+                    shmBlock.classList.remove('text-error', 'animate-pulse', 'border-red-500');
+                    shmBlock.textContent = sharedMemory; // Revert if input was null
+                }, 1500);
+                return;
+            }
+
+            // 1. Process A writes directly to the shared block
+            sharedMemory = data;
+            
+            // 2. Visual update (instantaneous, highlighting speed)
+            shmBlock.textContent = `"${data}"`;
+            shmBlock.classList.remove('text-shm-data', 'bg-gray-800');
+            shmBlock.classList.add('text-black', 'bg-shm-data', 'animate-pulse'); // Amber flash
+
+            setTimeout(() => {
+                shmBlock.classList.remove('animate-pulse', 'bg-shm-data', 'text-black');
+                shmBlock.classList.add('bg-gray-800', 'text-shm-data');
+            }, 700);
+
+            inputElement.value = '';
+            document.getElementById('shm-output').textContent = "// Data update signal received.";
+            document.getElementById('shm-output').classList.add('text-shm-data', 'border-shm-data');
+            
+            console.log(`Shared Memory updated: ${sharedMemory}`);
+        }
+
+        function readFromSharedMemory() {
+            const shmOutput = document.getElementById('shm-output');
+            const shmBlock = document.getElementById('shm-block');
+
+            if (sharedMemory === "(DATA NULL)") {
+                shmOutput.textContent = "// ERROR: SEGMENT IS NULL.";
+                shmOutput.classList.remove('text-shm-data', 'text-rose-200');
+                shmOutput.classList.add('text-error');
+                return;
+            }
+
+            // 1. Process B reads directly from the shared block
+            const data = sharedMemory;
+            
+            // 2. Visual update (instantaneous, showing P2 accessed it)
+            shmOutput.textContent = `// SYNC OK. Data: "${data}"`;
+            shmOutput.classList.remove('text-rose-200', 'text-shm-data', 'text-error');
+            shmOutput.classList.add('text-rose-400', 'bg-rose-900/30');
+
+            shmBlock.classList.add('ring-4', 'ring-rose-500', 'ring-opacity-50');
+
+            setTimeout(() => {
+                shmOutput.classList.remove('bg-rose-900/30');
+                shmBlock.classList.remove('ring-4', 'ring-rose-500', 'ring-opacity-50');
+            }, 700);
+            
+            console.log(`Process B read: ${data}`);
+        }
+
+        // --- 2. Pipes Logic ---
+
+        function sendViaPipe() {
+            const inputElement = document.getElementById('pipe-input');
+            const data = inputElement.value.trim();
+            const container = document.getElementById('pipe-animation-container');
+            const pipeOutput = document.getElementById('pipe-output');
+
+            if (!data) {
+                pipeOutput.textContent = "// FATAL: NO DATA PACKET DETECTED.";
+                pipeOutput.classList.add('text-error', 'border-red-500');
+                setTimeout(() => pipeOutput.classList.remove('text-error', 'border-red-500'), 1500);
+                return;
+            }
+
+            // 1. Add data to the queue (Implicit buffering handles the transfer)
+            pipeQueue.push(data);
+            
+            // 2. Visual animation setup (Data traversing the pipe)
+            const dataDot = document.createElement('div');
+            dataDot.className = 'pipe-data-animation';
+            dataDot.dataset.pipeData = data;
+            container.appendChild(dataDot);
+
+            // Re-apply animation class to restart animation
+            animateElement(dataDot, 'pipe-data-animation');
+
+            // 3. Update status and remove the dot after the animation finishes
+            pipeOutput.textContent = `// Packet ID:${pipeQueue.length} IN TRANSIT...`;
+            pipeOutput.classList.add('text-lime-400', 'border-lime-500');
+
+
+            setTimeout(() => {
+                dataDot.remove();
+                pipeOutput.textContent = `// Buffer: ${pipeQueue.length} packets pending.`;
+                pipeOutput.classList.remove('text-lime-400', 'border-lime-500');
+                pipeOutput.classList.add('text-shm-data', 'border-shm-data');
+            }, 2500); // Matches CSS animation duration
+
+            inputElement.value = '';
+            console.log(`Data sent via pipe. Queue size: ${pipeQueue.length}`);
+        }
+
+        function receiveFromPipe() {
+            const pipeOutput = document.getElementById('pipe-output');
+
+            if (pipeQueue.length === 0) {
+                pipeOutput.textContent = "// BUFFER NULL. Awaiting stream...";
+                pipeOutput.classList.remove('text-rose-400', 'text-shm-data');
+                pipeOutput.classList.add('text-gray-500', 'border-gray-500');
+                return;
+            }
+
+            // 1. Process B reads from the pipe (FIFO)
+            const data = pipeQueue.shift();
+
+            // 2. Visual update
+            pipeOutput.textContent = `// PACKET RECEIVED. Payload: "${data}"`;
+            pipeOutput.classList.remove('text-rose-200', 'text-shm-data', 'text-gray-500');
+            pipeOutput.classList.add('text-rose-400', 'bg-rose-900/50', 'border-rose-500');
+
+            setTimeout(() => pipeOutput.classList.remove('bg-rose-900/50'), 500);
+
+            console.log(`Process Receiver read: ${data}. Remaining: ${pipeQueue.length}`);
+        }
+
+
+        // --- 3. Message Passing Logic ---
+
+        function updateMessageQueueDisplay() {
+            const queueDisplay = document.getElementById('msg-queue');
+            
+            if (messageQueue.length === 0) {
+                queueDisplay.innerHTML = '<div class="text-center text-gray-500 text-sm">Waiting for incoming packets...</div>';
+                return;
+            }
+
+            // Use neon violet for the queue display
+            queueDisplay.innerHTML = messageQueue.map((msg, index) => {
+                let colorClass = 'bg-gray-700 text-gray-200';
+                if (msg.type === 'CMD') {
+                    colorClass = 'bg-accent-violet/50 text-accent-violet border border-accent-violet/70';
+                } else if (msg.type === 'ERROR') {
+                    colorClass = 'bg-red-700/50 text-error border border-error/70';
+                } else {
+                    colorClass = 'bg-lime-700/50 text-lime-400 border border-lime-700';
+                }
+
+                return `
+                    <div class="text-xs font-mono p-2 rounded-md ${colorClass} shadow-md">
+                        <span class="font-bold">[Type ${msg.type}]</span> Payload: ${msg.payload}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function sendMessage() {
+            const type = document.getElementById('msg-type').value;
+            const payload = document.getElementById('msg-payload').value.trim();
+
+            const lastReceivedDisplay = document.getElementById('msg-last-received');
+
+            if (!payload) {
+                lastReceivedDisplay.textContent = "// ERROR: PAYLOAD REQUIRED FOR TRANSMISSION.";
+                lastReceivedDisplay.classList.add('text-error');
+                return;
+            }
+            lastReceivedDisplay.classList.remove('text-error');
+
+
+            // 1. Process A constructs a structured message
+            const message = { type, payload, timestamp: new Date().toLocaleTimeString() };
+
+            // 2. Message is copied into the central queue
+            messageQueue.push(message);
+
+            // 3. Visual update
+            updateMessageQueueDisplay();
+            document.getElementById('msg-payload').value = '';
+
+            console.log('Message sent:', message);
+        }
+
+        function receiveMessage() {
+            const lastReceivedDisplay = document.getElementById('msg-last-received');
+
+            if (messageQueue.length === 0) {
+                lastReceivedDisplay.textContent = "// QUEUE EMPTY. NO PACKETS TO RETRIEVE.";
+                lastReceivedDisplay.classList.remove('text-rose-400', 'bg-rose-900/50');
+                lastReceivedDisplay.classList.add('text-gray-500');
+                return;
+            }
+
+            // 1. Process B requests the message from the queue (FIFO)
+            const message = messageQueue.shift();
+
+            let typeColor = 'text-green-400';
+            if (message.type === 'CMD') {
+                typeColor = 'text-accent-violet';
+            } else if (message.type === 'ERROR') {
+                typeColor = 'text-error';
+            }
+
+
+            // 2. Visual update
+            lastReceivedDisplay.innerHTML = `
+                <span class="text-sm font-bold block ${typeColor}">// PACKET ${message.type} RECEIVED</span>
+                Payload: "${message.payload}"
+            `;
+            
+            lastReceivedDisplay.classList.remove('text-rose-200', 'text-gray-500');
+            lastReceivedDisplay.classList.add('bg-rose-900/30', 'ring-2', 'ring-rose-500', 'ring-opacity-50', 'text-rose-200');
+
+            setTimeout(() => {
+                lastReceivedDisplay.classList.remove('bg-rose-900/30', 'ring-2', 'ring-rose-500', 'ring-opacity-50');
+            }, 700);
+
+            updateMessageQueueDisplay();
+            console.log('Message received:', message);
+        }
+
+    </script>
+</body>
+</html>
