@@ -16,10 +16,11 @@
             font-family: 'Inter', sans-serif;
             margin: 0;
             padding: 0;
-            overflow: hidden; 
+            /* Scroll feature enabled */
+            overflow-y: auto; 
+            overflow-x: hidden; 
             background-color: #000000; /* Solid black fallback */
         }
-
         .background-container {
             position: fixed;
             top: 0;
@@ -136,7 +137,8 @@
     </header>
 
     <!-- Main Content Area: Left-Aligned Card and OS Description -->
-    <div class="min-h-screen flex flex-col-reverse md:flex-row items-center justify-start pt-52 md:pt-40 p-6 md:p-12 space-y-12 md:space-y-0 md:space-x-12 relative z-10">
+    <!-- Added pb-[120px] on mobile to ensure content clears the fixed bottom link bar. -->
+    <div class="min-h-screen flex flex-col-reverse md:flex-row items-center justify-start pt-52 md:pt-40 p-6 md:p-12 pb-[120px] md:pb-12 space-y-12 md:space-y-0 md:space-x-12 relative z-10">
 
         <!-- Left Column: Primary Interface Card (Fully transparent) -->
         <div class="w-full md:w-1/3 flex justify-center md:justify-start">
@@ -219,7 +221,7 @@
                 document.body.style.overflow = 'hidden'; // Prevent scrolling background
             } else {
                 modal.classList.add('hidden');
-                document.body.style.overflow = 'auto'; // Restore scrolling
+                document.body.style.overflow = 'auto'; // Restore scrolling (Uses 'auto' now for consistency)
             }
         }
     </script>
