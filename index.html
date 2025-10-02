@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS CORE - Created By SAGAR</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Font Awesome for Icons (GitHub, LinkedIn) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Custom CSS for the Video Background and Monochrome Theme */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow: hidden; 
+            background-color: #000000; /* Solid black fallback */
+        }
+
+        .background-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2; /* Ensure content is above */
+            overflow: hidden;
+        }
+
+        /* Styling for the video to ensure it covers the screen (Monochrome filter added via CSS) */
+        .background-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; 
+            opacity: 0.5; /* Reduced opacity for readability, matching the dark background aesthetics */
+            filter: grayscale(100%) brightness(0.6); /* Apply monochrome filter and darken it slightly */
+        }
+
+        /* The content card is now highly transparent. */
+        .content-card {
+            background-color: transparent; 
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.7); 
+        }
+
+        /* Sleek, professional links in the header */
+        .header-link {
+            transition: all 0.2s ease-in-out;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            white-space: nowrap; /* Prevents long link text from wrapping unexpectedly */
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 250px; /* Limits width of link text for cleaner alignment */
+        }
+
+        .header-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Custom style for the modal content panel */
+        .modal-content-panel {
+            background-color: rgba(10, 10, 10, 0.9); /* Semi-transparent black background */
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            animation: slide-in 0.3s forwards;
+        }
+
+        @keyframes slide-in {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+    </style>
+</head>
+<body class="text-white">
+
+    <!-- Background Video Container -->
+    <div class="background-container">
+        <!-- Using the MP4 file as a looping, muted video background -->
+        <video autoplay muted loop playsinline class="background-video" preload="auto">
+            <source src="f2ce7625d4166a10aa536766a6895d35.mp4" type="video/mp4">
+            <!-- Fallback for browsers that do not support video backgrounds -->
+            <img src="https://placehold.co/1280x720/000/fff?text=Cosmic+Interface+Fallback" class="background-video" alt="Space Background Fallback Image">
+        </video>
+    </div>
+
+    <!-- Top Navigation / Branding (Inspired by NEXUS style) -->
+    <header class="fixed top-0 left-0 right-0 p-4 md:p-6 flex justify-between items-center z-30 bg-transparent backdrop-blur-sm">
+        <!-- Left Side: NEXUS CORE Branding -->
+        <div class="text-xl font-extrabold tracking-widest uppercase flex items-center">
+            <!-- Placeholder Logo/Icon - Minimalist Cube -->
+            <svg class="w-6 h-6 mr-2 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10m0-10l-4-2m4 2l4-2m-4 2l-4 2m8-4l-4 2"></path>
+            </svg>
+            <span class="hidden sm:inline">NEXUS CORE</span>
+        </div>
+        
+        <!-- Right Side: Access Links and About Us/GitHub -->
+        <div class="flex items-center space-x-4">
+            <!-- Access Links (Hidden on small screens, shown in footer fallback) -->
+            <nav class="hidden md:flex space-x-2 text-sm">
+                <!-- Resource 1 links to 1.html -->
+                <a href="1.html" target="_blank" class="header-link text-gray-300 hover:text-white" title="Architecture of a Computer System & Role of OS">Architecture of a Computer System & Role of OS</a>
+                <!-- Resource 2 links to 2.html -->
+                <a href="2.html" target="_blank" class="header-link text-gray-300 hover:text-white" title="CPU SCHEDULING">CPU SCHEDULING</a>
+                <!-- Resource 3 links to 3.html -->
+                <a href="3.html" target="_blank" class="header-link text-gray-300 hover:text-white" title="Inter-Process Communication">Inter-Process Communication</a>
+                <!-- Resource 4 links to 4.html -->
+                <a href="4.html" target="_blank" class="header-link text-gray-300 hover:text-white" title="Banker’s Algorithm Simulator">Banker’s Algorithm Simulator</a>
+            </nav>
+            
+            <!-- About Us Link (Now opens the modal) -->
+            <button onclick="toggleAboutModal()" class="header-link text-gray-300 hover:text-white text-sm focus:outline-none">
+                ABOUT US
+            </button>
+
+            <!-- LinkedIn Icon -->
+            <a href="https://www.linkedin.com/in/sagar-bhargav-b78b11342?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" target="_blank" class="text-white hover:text-gray-300 transition duration-300 p-2 rounded-full hover:bg-white/10">
+                <i class="fab fa-linkedin text-xl md:text-2xl"></i>
+            </a>
+
+            <!-- GitHub Icon (Usable Link) -->
+            <a href="https://github.com/sagarBHARGAV-BYTE" target="_blank" class="text-white hover:text-gray-300 transition duration-300 p-2 rounded-full hover:bg-white/10">
+                <i class="fab fa-github text-xl md:text-2xl"></i>
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Content Area: Left-Aligned Card and OS Description -->
+    <div class="min-h-screen flex flex-col-reverse md:flex-row items-center justify-start pt-52 md:pt-40 p-6 md:p-12 space-y-12 md:space-y-0 md:space-x-12 relative z-10">
+
+        <!-- Left Column: Primary Interface Card (Fully transparent) -->
+        <div class="w-full md:w-1/3 flex justify-center md:justify-start">
+            <div class="content-card p-8 rounded-2xl space-y-6 text-white w-full max-w-sm">
+                <header class="text-center pb-4">
+                    <div class="text-2xl font-bold tracking-widest uppercase border-b border-white/30 pb-2">
+                        WEBPAGE CREATED BY
+                    </div>
+                </header>
+
+                <!-- Details Section - Name, SAP ID, and Batch -->
+                <section class="space-y-5 text-sm">
+                    <!-- Name Field -->
+                    <div class="flex flex-col">
+                        <span class="w-full sm:w-1/3 text-gray-400 font-light">Name:</span>
+                        <p class="text-base font-bold text-white">SAGAR</p>
+                    </div>
+
+                    <!-- SAP ID Field -->
+                    <div class="flex flex-col">
+                        <span class="w-full sm:w-1/3 text-gray-400 font-light">SAP ID:</span>
+                        <p class="text-base font-bold text-white">590018232</p>
+                    </div>
+
+                    <!-- Batch Field -->
+                    <div class="flex flex-col">
+                        <span class="w-full sm:w-1/3 text-gray-400 font-light">Batch:</span>
+                        <p class="text-base font-bold text-white">64</p>
+                    </div>
+                    
+                </section>
+            </div>
+        </div>
+        
+        <!-- Right Column: OS Description (Centered) -->
+        <div class="flex-1 flex items-center justify-center h-full w-full">
+            <p class="text-xl md:text-2xl lg:text-3xl font-light text-center max-w-xl text-gray-200 leading-relaxed p-4 bg-black/5 rounded-lg border-b border-white/20">
+                <span class="font-extrabold text-white uppercase tracking-wider">LORD VISHNU: </span> The Ultimate Operating System, preserving stability and orchestrating resources across the entire cosmos.
+            </p>
+        </div>
+    </div>
+    
+    <!-- About Us Modal (Initially Hidden) -->
+    <div id="aboutModal" class="hidden fixed inset-0 z-40 flex items-center justify-center modal-backdrop transition-opacity">
+        <div class="modal-content-panel p-8 rounded-xl shadow-2xl w-11/12 max-w-xl space-y-6">
+            <h2 class="text-3xl font-extrabold tracking-wider border-b pb-2 border-white/20">
+                ABOUT SAGAR'S WEBPAGE
+            </h2>
+            <p class="text-lg text-gray-300">
+                This portal is a consolidated interface designed and maintained by **SAGAR**. It serves as a central hub for navigating my key academic and personal projects, primarily focusing on advanced **Operating Systems** concepts and simulations.
+            </p>
+            <p class="text-lg text-gray-300">
+                **Objective:** To present complex computer science topics
+            </p>
+            <div class="text-right pt-4">
+                <button onclick="toggleAboutModal()" class="px-6 py-2 bg-white/10 text-white rounded-lg font-semibold hover:bg-white/20 transition duration-200">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fallback for small screens to access links -->
+    <div class="fixed bottom-0 left-0 right-0 md:hidden p-4 bg-black/50 backdrop-blur-sm z-20 border-t border-white/20">
+        <div class="grid grid-cols-2 gap-3 text-xs font-semibold">
+            <a href="1.html" target="_blank" class="text-center p-2 rounded-lg bg-gray-900 hover:bg-white/10 border border-white/30">Architecture of a Computer System & Role of OS</a>
+            <a href="2.html" target="_blank" class="text-center p-2 rounded-lg bg-gray-900 hover:bg-white/10 border border-white/30">CPU SCHEDULING</a>
+            <a href="3.html" target="_blank" class="text-center p-2 rounded-lg bg-gray-900 hover:bg-white/10 border border-white/30">Inter-Process Communication</a>
+            <a href="4.html" target="_blank" class="text-center p-2 rounded-lg bg-gray-900 hover:bg-white/10 border border-white/30">Banker’s Algorithm Simulator</a>
+        </div>
+        <p class="text-xs text-center pt-2 text-gray-500">Access Links</p>
+    </div>
+
+    <script>
+        // Function to toggle the visibility of the About Us modal
+        function toggleAboutModal() {
+            const modal = document.getElementById('aboutModal');
+            if (modal.classList.contains('hidden')) {
+                modal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden'; // Prevent scrolling background
+            } else {
+                modal.classList.add('hidden');
+                document.body.style.overflow = 'auto'; // Restore scrolling
+            }
+        }
+    </script>
+
+</body>
+</html>
