@@ -10,10 +10,10 @@
         /* Define Futuristic Color Palette */
         :root {
             --color-bg: #0d0d1a;
-            --color-primary: #8b5cf6;    /* Vibrant Purple */
-            --color-secondary: #22d3ee;  /* Electric Cyan */
-            --color-border: #3a3a60;     /* Dark Border */
-            --color-glow: #a78bfa;       /* Light Purple Glow */
+            --color-primary: #8b5cf6; 	/* Vibrant Purple */
+            --color-secondary: #22d3ee; /* Electric Cyan */
+            --color-border: #3a3a60; 	/* Dark Border */
+            --color-glow: #a78bfa; 	/* Light Purple Glow */
         }
 
         /* Custom styles for the "Multiverse" aesthetic */
@@ -107,7 +107,7 @@
             top: 0; 
             left: 0;
             width: 100%;
-            height: 100%; /* CHANGED: Now covers 100% of the viewport */
+            height: 100%; 
             /* Background set to transparent, flashes rely solely on box-shadow */
             background: transparent; 
             animation: localized-thunder 5s linear infinite; /* Faster, localized flashing */
@@ -160,6 +160,13 @@
         }
         /* --- End Hyper-Dynamic Background --- */
 
+        /* --- MOBILE PERFORMANCE OPTIMIZATION --- */
+        /* Disable heavy background animations on screens smaller than 768px */
+        @media (max-width: 768px) {
+            #animated-background {
+                display: none !important; 
+            }
+        }
 
         /* --- Header Styling --- */
         header {
@@ -167,15 +174,17 @@
         }
         
         .header-title {
-            font-size: 1.875rem; /* text-3xl */
-            font-weight: 800;    /* font-extrabold */
+            /* Base size for desktop (text-3xl) */
+            font-size: 1.875rem; 
+            font-weight: 800; 
             background-clip: text;
             color: transparent;
             background-image: linear-gradient(to right, #22d3ee, #8b5cf6);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            letter-spacing: 0.1em; /* tracking-wider */
+            letter-spacing: 0.1em; 
         }
+        /* Adjust for mobile using media query, although Tailwind classes handle this well below */
 
 
         /* Styling for the main content card (Holographic Panel) */
@@ -233,7 +242,7 @@
         /* Gantt Chart Styling */
         #gantt-chart {
             display: flex;
-            overflow-x: auto;
+            overflow-x: auto; /* CRITICAL for mobile responsiveness of long charts */
             white-space: nowrap;
             min-height: 80px;
             margin-top: 1rem;
@@ -309,6 +318,7 @@
 <body class="min-h-screen">
 
     <!-- Dynamic Flowing Background (Mimics Futuristic GIF/Data Flow) -->
+    <!-- This entire block is hidden on mobile devices via the media query above -->
     <div id="animated-background">
         <div id="bg-pulse"></div>
         <div id="bg-grid"></div>
@@ -322,10 +332,12 @@
 
     <header class="fixed top-0 left-0 w-full z-60 bg-gray-900/90 backdrop-blur-md border-b border-[#3a3a60] shadow-xl">
         <div class="container mx-auto p-4 flex justify-between items-center">
-            <h1 class="header-title" data-text="CPU SCHEDULING NEXUS">
+            <!-- Adjusted font size for mobile (text-xl) and desktop (sm:text-3xl) -->
+            <h1 class="header-title text-xl sm:text-3xl" data-text="CPU SCHEDULING NEXUS">
                 CPU SCHEDULING NEXUS
             </h1>
-            <p id="current-algo" class="text-lg font-medium text-purple-300">Algorithm: Core Systems Standby</p>
+            <!-- Adjusted font size for mobile (text-sm) and desktop (sm:text-lg) -->
+            <p id="current-algo" class="text-sm sm:text-lg font-medium text-purple-300">Algorithm: Core Systems Standby</p>
         </div>
     </header>
 
@@ -336,6 +348,7 @@
             <h2 class="text-2xl font-bold mb-4 text-indigo-400 border-b-2 border-indigo-500/50 pb-2">1. Initialize Processes</h2>
 
             <!-- Quantum Input -->
+            <!-- Ensures vertical stacking on mobile (flex-col) and horizontal on larger screens (sm:flex-row) -->
             <div class="mb-6 flex flex-col sm:flex-row sm:items-end sm:space-x-4">
                 <div class="flex-grow">
                     <label for="quantum" class="block text-sm font-medium text-purple-300">Round Robin Quantum (ms)</label>
@@ -348,19 +361,23 @@
             </div>
 
 
-            <!-- Add New Process Form -->
+            <!-- Add New Process Form: Responsive grid for 5 inputs + 1 button -->
             <form id="add-process-form" class="grid grid-cols-2 md:grid-cols-5 gap-4 items-end mb-6 p-4 border border-blue-500/30 rounded-lg">
+                <!-- Name takes up 2 columns on mobile, 1 on desktop -->
                 <input type="text" id="p_name" placeholder="Name (P1, P2...)" required class="col-span-2 md:col-span-1 p-2 rounded-lg input-glow focus:outline-none text-white">
+                <!-- AT, BT, Priority each take up 1 column on mobile (2 wide total) -->
                 <input type="number" id="p_arrival" placeholder="Arrival Time (AT)" required min="0" value="0" class="col-span-1 p-2 rounded-lg input-glow focus:outline-none text-white">
                 <input type="number" id="p_burst" placeholder="Burst Time (BT)" required min="1" class="col-span-1 p-2 rounded-lg input-glow focus:outline-none text-white">
-                <input type="number" id="p_priority" placeholder="Priority (1=Highest)" required min="1" value="1" class="col-span-1 p-2 rounded-lg input-glow focus:outline-none text-white">
-                <!-- Keep btn-primary for immediate action feedback -->
+                <input type="number" id="p_priority" placeholder="Priority (1=Highest)" required min="1" value="1" class="col-span-2 sm:col-span-1 p-2 rounded-lg input-glow focus:outline-none text-white">
+                
+                <!-- Button spans all columns (2 on mobile, 5 on desktop) -->
                 <button type="submit" class="col-span-2 md:col-span-5 btn-primary p-2 rounded-lg text-white font-bold uppercase">
                     Add Process to Queue
                 </button>
             </form>
 
             <!-- Current Process List -->
+            <!-- overflow-x-auto is essential for small screens if columns are wide -->
             <div class="overflow-x-auto">
                 <table class="min-w-full text-sm rounded-lg overflow-hidden">
                     <thead class="text-left text-xs uppercase tracking-wider">
@@ -382,6 +399,7 @@
         <!-- Section 2: Algorithm Selection and Run -->
         <section id="control-section" class="card p-6 rounded-xl sticky top-[80px] z-10 scroll-animate">
             <h2 class="text-2xl font-bold mb-4 text-indigo-400 border-b-2 border-indigo-500/50 pb-2">2. Select & Deploy Scheduling Protocol</h2>
+            <!-- Grid automatically stacks on mobile (grid-cols-1) -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <!-- APPLYING btn-command -->
                 <button onclick="runSimulation('priority_preemptive')" class="btn-command p-4 rounded-lg font-bold text-center uppercase tracking-wider flex items-center justify-center">
@@ -406,32 +424,34 @@
             <div id="gantt-chart">
                 <!-- Gantt chart segments will be injected here -->
             </div>
-            <p class="text-xs text-gray-400 mt-4">X-axis represents time unit flow. Each segment is a CPU burst.</p>
+            <p class="text-xs text-gray-400 mt-4">X-axis represents time unit flow. Each segment is a CPU burst. Scroll right to view full timeline.</p>
 
             <div id="results-content" class="mt-8 space-y-8">
                 <!-- Summary Metrics -->
                 <h3 class="text-xl font-semibold mb-3 text-cyan-300">System Performance Summary</h3>
+                <!-- Grid stacks to 2 columns on mobile (grid-cols-2) and 4 on desktop (md:grid-cols-4) -->
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
                     <div class="p-4 rounded-lg bg-indigo-900/50 data-box">
                         <p class="text-xs uppercase text-indigo-300 font-semibold">CPU Utilization</p>
-                        <p id="cpu-utilization" class="text-3xl font-extrabold text-white">0.00%</p>
+                        <p id="cpu-utilization" class="text-2xl sm:text-3xl font-extrabold text-white">0.00%</p>
                     </div>
                     <div class="p-4 rounded-lg bg-purple-900/50 data-box">
                         <p class="text-xs uppercase text-purple-300 font-semibold">Avg Turnaround Time</p>
-                        <p id="avg-tat" class="text-3xl font-extrabold text-white">0.00</p>
+                        <p id="avg-tat" class="text-2xl sm:text-3xl font-extrabold text-white">0.00</p>
                     </div>
                     <div class="p-4 rounded-lg bg-red-900/50 data-box">
                         <p class="text-xs uppercase text-red-300 font-semibold">Avg Waiting Time</p>
-                        <p id="avg-wt" class="text-3xl font-extrabold text-white">0.00</p>
+                        <p id="avg-wt" class="text-2xl sm:text-3xl font-extrabold text-white">0.00</p>
                     </div>
                     <div class="p-4 rounded-lg bg-green-900/50 data-box">
                         <p class="text-xs uppercase text-green-300 font-semibold">Avg Response Time</p>
-                        <p id="avg-rt" class="text-3xl font-extrabold text-white">0.00</p>
+                        <p id="avg-rt" class="text-2xl sm:text-3xl font-extrabold text-white">0.00</p>
                     </div>
                 </div>
 
                 <!-- Per-Process Metrics -->
                 <h3 class="text-xl font-semibold mt-6 mb-3 text-cyan-300">Process State Metrics</h3>
+                <!-- overflow-x-auto is CRITICAL here too for the wide metrics table -->
                 <div class="overflow-x-auto">
                     <table class="min-w-full text-sm rounded-lg overflow-hidden">
                         <thead class="text-left text-xs uppercase tracking-wider">
@@ -882,14 +902,24 @@
 
             // Helper to add arrived processes to queue
             const updateQueue = () => {
-                runnableProcesses.forEach(p => {
-                    if (p.arrivalTime <= currentTime && p.remainingTime > 0 && !inQueue.has(p.id)) {
-                        readyQueue.push(p);
-                        inQueue.add(p.id);
+                // Filter processes that have arrived and are not finished, and are not already in the queue
+                const newlyArrived = runnableProcesses.filter(p => 
+                    p.arrivalTime <= currentTime && p.remainingTime > 0 && !inQueue.has(p.id)
+                ).sort((a, b) => {
+                    // Tie-breaker: Processes arriving at the same time are ordered by initial entry order (implicitly by their position in the runnableProcesses array, which is sorted by AT)
+                    if (a.arrivalTime !== b.arrivalTime) {
+                        return a.arrivalTime - b.arrivalTime;
                     }
+                    return a.id - b.id; // Secondary tie-breaker: original ID
                 });
-                // Sort queue by arrival time for tie-breaking
-                readyQueue.sort((a, b) => a.arrivalTime - b.arrivalTime);
+
+                newlyArrived.forEach(p => {
+                    readyQueue.push(p);
+                    inQueue.add(p.id);
+                });
+
+                // NOTE: readyQueue doesn't need re-sorting after initial population and requeueing, 
+                // as new arrivals are appended after existing queue elements.
             };
             
             // Update queue to include initial arrivals
@@ -944,8 +974,10 @@
                         color: runningProcess.color
                     });
 
-                    // 5. Update queue for new arrivals during the executed time
-                    updateQueue();
+                    // 5. Update queue for new arrivals during the executed time (Crucial step for RR)
+                    // We must check for arrivals that happened *between* the start (start) and end (currentTime) of this slice.
+                    // This is handled automatically by the single currentTime update and the updateQueue call:
+                    updateQueue(); 
 
                     // 6. Check for Completion or Requeue
                     if (runningProcess.remainingTime === 0) {
@@ -956,7 +988,7 @@
                     } else {
                         // Requeue: add back to the end of the ready queue
                         readyQueue.push(runningProcess);
-                        inQueue.add(runningProcess.id);
+                        inQueue.add(runningProcess.id); // Add back to inQueue set
                     }
                 }
             }
@@ -972,8 +1004,8 @@
          */
         function calculateMetrics(p) {
             p.TAT = p.completionTime - p.arrivalTime; // Turnaround Time = CT - AT
-            p.WT = p.TAT - p.burstTime;             // Waiting Time = TAT - BT
-            p.RT = p.startTime - p.arrivalTime;       // Response Time = First Start Time - AT
+            p.WT = p.TAT - p.burstTime; 		// Waiting Time = TAT - BT
+            p.RT = p.startTime - p.arrivalTime; 	// Response Time = First Start Time - AT
         }
 
         /**
@@ -988,6 +1020,8 @@
             const totalTime = ganttChart[ganttChart.length - 1].end;
             if (totalTime === 0) return;
 
+            // Simple scaling logic to try and fit charts up to maxSegments within the container
+            // If totalTime is huge, segments will be very small, but at least the overall bar fits.
             const maxSegments = 100;
             const scaleFactor = 100 / Math.min(totalTime, maxSegments);
 
@@ -997,7 +1031,8 @@
                 
                 const segmentDiv = document.createElement('div');
                 segmentDiv.className = `gantt-segment ${segment.color} ${isIdle ? 'text-gray-400 font-light' : 'text-black font-semibold'} flex-shrink-0`;
-                segmentDiv.style.width = `${Math.max(widthPercentage, 1)}%`;
+                // Ensure a minimum width for visibility on mobile, but scale based on time duration
+                segmentDiv.style.width = `${Math.max(widthPercentage, 1)}%`; 
                 segmentDiv.style.minWidth = segment.duration === 0 ? '0' : '20px';
                 
                 segmentDiv.innerHTML = `
