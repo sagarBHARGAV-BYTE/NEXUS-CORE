@@ -167,24 +167,25 @@
     </header>
 
     <!-- Full-Screen Mobile Menu Modal (Hidden by default - Responsive Design) -->
-    <div id="mobileMenuModal" class="hidden fixed inset-0 z-40 p-6 bg-black/95 backdrop-blur-xl transition-all duration-300">
-        <!-- Header/Close Button -->
-        <div class="flex justify-between items-center mb-16 pt-2">
+    <!-- Added flex-col to enable scrolling -->
+    <div id="mobileMenuModal" class="hidden fixed inset-0 z-40 p-6 bg-black/95 backdrop-blur-xl transition-all duration-300 flex flex-col">
+        <!-- Header/Close Button (Fixed at the top, does not scroll) -->
+        <div class="flex justify-between items-center mb-8 pt-2 flex-shrink-0">
             <div class="text-2xl font-extrabold tracking-widest uppercase">NEXUS CORE</div>
             <button onclick="toggleMobileMenu()" class="text-white text-3xl hover:text-gray-300 p-2" aria-label="Close Menu">
                 <i class="fas fa-times" aria-hidden="true"></i>
             </button>
         </div>
 
-        <!-- Mobile Navigation Links -->
-        <nav class="flex flex-col space-y-8 text-xl font-semibold">
+        <!-- Mobile Navigation Links (Takes remaining space and enables scrolling) -->
+        <nav class="flex flex-col space-y-8 text-xl font-semibold flex-grow overflow-y-auto pr-2">
             <!-- Close menu on link click to maintain UX flow -->
             <a href="1.html" target="_blank" onclick="toggleMobileMenu()" class="text-gray-300 hover:text-white transition duration-200 border-b border-white/10 pb-2">Architecture of a Computer System & Role of OS</a>
             <a href="2.html" target="_blank" onclick="toggleMobileMenu()" class="text-gray-300 hover:text-white transition duration-200 border-b border-white/10 pb-2">CPU SCHEDULING</a>
             <a href="3.html" target="_blank" onclick="toggleMobileMenu()" class="text-gray-300 hover:text-white transition duration-200 border-b border-white/10 pb-2">Inter-Process Communication</a>
             <a href="4.html" target="_blank" onclick="toggleMobileMenu()" class="text-gray-300 hover:text-white transition duration-200 border-b border-white/10 pb-2">Banker’s Algorithm Simulator</a>
             
-            <div class="pt-8">
+            <div class="pt-8 flex-shrink-0">
                 <!-- Open About Modal, then close the Mobile Menu -->
                 <button onclick="toggleAboutModal(); toggleMobileMenu();" class="text-gray-300 hover:text-white transition duration-200 text-left text-xl font-semibold">
                     ABOUT US
