@@ -139,19 +139,9 @@
         <source src="125e34464a880ff622733afe8f2b3374.mp4" type="video/mp4">
         Your browser does not support the video tag.
     </video>
-
-    <!-- Loader Screen (Webpage opening animation) -->
-    <div id="loader-screen" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-gray-900 transition-opacity duration-1000">
-        <div class="text-4xl font-extrabold text-cyan-400 tracking-widest mb-4 animate-pulse" style="text-shadow: 0 0 10px #06b6d4;">
-            SYSTEM INITIALIZING...
-        </div>
-        <div class="w-64 h-1 bg-gray-700 rounded-full overflow-hidden">
-            <div id="loader-bar" class="h-full bg-accent-violet transition-all duration-200" style="width: 0;"></div>
-        </div>
-    </div>
     
-    <!-- Main Content Wrapper, initially hidden -->
-    <div id="main-content" class="opacity-0 transition-opacity duration-1000">
+    <!-- Main Content Wrapper, now immediately visible -->
+    <div id="main-content" class="opacity-100">
 
         <div class="max-w-7xl mx-auto">
             <header class="text-center mb-16">
@@ -363,42 +353,8 @@
             element.classList.add(animationClass);
         }
 
-        // --- Logic: Loader Screen and Scroll Reveal (Updated for bi-directional hide/show) ---
+        // --- Logic: Scroll Reveal Setup ---
         
-        const loaderScreen = document.getElementById('loader-screen');
-        const mainContent = document.getElementById('main-content');
-        const loaderBar = document.getElementById('loader-bar');
-
-        // 1. Initial Loading Animation (The "webpage opening animation")
-        function startLoader() {
-            let progress = 0;
-            // Use a slight delay to make the bar fill visible
-            const interval = setInterval(() => {
-                progress += 5;
-                loaderBar.style.width = `${progress}%`;
-                if (progress >= 100) {
-                    clearInterval(interval);
-                    // Simulate system check delay for a better effect
-                    setTimeout(finalizeLoad, 300); 
-                }
-            }, 100);
-        }
-
-        function finalizeLoad() {
-            // Fade out loader
-            loaderScreen.style.opacity = '0';
-            
-            // Fade in main content
-            mainContent.style.opacity = '1';
-            
-            setTimeout(() => {
-                loaderScreen.style.display = 'none';
-            }, 1000); // Matches CSS transition duration
-
-            // Start observing sections after the main content is visible
-            setupScrollReveal();
-        }
-
         // 2. Scroll Reveal Setup (Updated to handle both entry (show) and exit (hide))
         function setupScrollReveal() {
             // Target all sections that need to be revealed, including the new 'ipc-overview'
@@ -442,9 +398,10 @@
             });
         }
         
-        // Initial setup
+        // Initial setup - Loader removed, start immediately
         document.addEventListener('DOMContentLoaded', () => {
-            startLoader();
+            // Main content is immediately visible in HTML
+            setupScrollReveal();
             updateMessageQueueDisplay();
         });
 
